@@ -1,0 +1,4 @@
+jobscript: "float-jobscript.sh"
+cluster: "float-submit.py"
+# cluster-status: "float-status.py"
+# cluster-cancel: "float-cancel.py"

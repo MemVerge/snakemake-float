@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-'''
 import sys
 import subprocess
 import yaml
@@ -32,12 +31,9 @@ if __name__ == '__main__':
     job_properties = read_job_properties(jobscript)
 
     config_file = 'snakemake-float.yaml'
-    try:
-        with open(config_file) as cf:
-            float_config = yaml.safe_load(cf)
-    except:
-        pass
+
+    with open(config_file) as cf:
+        float_config = yaml.safe_load(cf)
 
     float_submitter = FloatSubmitter(**float_config)
     float_submitter.submit_job(jobscript)
-'''

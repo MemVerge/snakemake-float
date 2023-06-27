@@ -1,4 +1,5 @@
 jobscript: "float-jobscript.sh"
-cluster: "float-submit.py"
-# cluster-status: "float-status.py"
-# cluster-cancel: "float-cancel.py"
+cluster: "float_submit.py"
+cluster-status: "float_status.py"
+# cluster-cancel: "float_cancel.py"
+no-shared-fs: true

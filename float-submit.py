@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
+
 import sys
 import subprocess
-import re
 import yaml
 
 from snakemake.utils import read_job_properties
@@ -9,7 +9,7 @@ from snakemake.utils import read_job_properties
 CONFIG_FILE = 'snakemake-float.yaml'
 
 
-class FloatSubmitter:
+class FloatSubmit:
     required_kwargs = ('address', 'username', 'password', 'dataVolume')
 
     def __init__(self, **kwargs):
@@ -37,12 +37,12 @@ class FloatSubmitter:
 
 
 if __name__ == '__main__':
-    jobscript = sys.argv[-1]
+    jobscript = sys.argv[1]
     job_properties = read_job_properties(jobscript)
 
     with open(CONFIG_FILE) as cf:
         float_config = yaml.safe_load(cf)
 
-    float_submitter = FloatSubmitter(**float_config)
-    jobid = float_submitter.submit_job(jobscript)
+    float_submit = FloatSubmit(**float_config)
+    jobid = float_submit.submit_job(jobscript)
     print(jobid)

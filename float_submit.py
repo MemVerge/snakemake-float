@@ -15,10 +15,12 @@ class FloatSubmit:
     def submit_job(self, job_file):
         cmd = ['float', 'submit']
 
-        for key, value in self._config.parameters().items():
+        config_parameters = self._config.parameters()
+        for key, value in config_parameters.items():
             if key != 'common-extra':
                 cmd.extend([f'--{key}', value])
 
+        cmd.extend(config_parameters['common-extra'])
         cmd.extend(['--job', job_file])
 
         output = subprocess.check_output(cmd).decode()

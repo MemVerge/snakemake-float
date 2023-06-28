@@ -3,3 +3,4 @@ cluster: "float_submit.py"
 cluster-status: "float_status.py"
 # cluster-cancel: "float_cancel.py"
 no-shared-fs: true
+latency-wait: 60

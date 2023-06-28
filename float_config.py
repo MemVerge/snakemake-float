@@ -7,6 +7,8 @@ class FloatConfig:
     _CONFIG_FILE = 'snakemake-float.yaml'
     _REQUIRED_KWARGS = ('address', 'username', 'password', 'dataVolume')
 
+    SUBMIT_EXTRA = 'extra'
+
     def __init__(self, config_file=_CONFIG_FILE):
         self._parameters = {
             'image': 'snakemake/snakemake:latest',
@@ -19,7 +21,9 @@ class FloatConfig:
 
         for kwarg in self._REQUIRED_KWARGS:
             if kwarg not in kwargs:
-                raise TypeError(f"{config_file} missing required: '{kwarg}'")
+                raise TypeError(
+                    f"{config_file} missing required argument: '{kwarg}'"
+                )
 
         self._parameters.update(kwargs)
 

@@ -20,6 +20,7 @@ class FloatSubmit:
             if key != 'common-extra':
                 cmd.extend([f'--{key}', value])
 
+        # TODO: Determine if split needed
         cmd.extend(config_parameters['common-extra'])
         cmd.extend(['--job', job_file])
 

@@ -4,16 +4,20 @@ import yaml
 
 
 class FloatConfig:
-    CONFIG_FILE = 'snakemake-float.yaml'
-    _required_kwargs = ('address', 'username', 'password', 'dataVolume')
+    _CONFIG_FILE = 'snakemake-float.yaml'
+    _REQUIRED_KWARGS = ('address', 'username', 'password', 'dataVolume')
 
-    def __init__(self, config_file=CONFIG_FILE):
-        self._parameters = {'image': 'cactus', 'cpu': '2', 'mem': '4'}
+    def __init__(self, config_file=_CONFIG_FILE):
+        self._parameters = {
+            'image': 'snakemake/snakemake:latest',
+            'cpu': '2',
+            'mem': '4'
+        }
 
         with open(config_file) as cf:
             kwargs = yaml.safe_load(cf)
 
-        for kwarg in self._required_kwargs:
+        for kwarg in self._REQUIRED_KWARGS:
             if kwarg not in kwargs:
                 raise TypeError(f"{config_file} missing required: '{kwarg}'")
 

@@ -20,7 +20,7 @@ In your Snakemake working directory, create file `snakemake-float.yaml` based on
 SHARED_DIR SUBNET(rw,sync,all_squash,anonuid=UID,anongid=GID)
 ```
 
-We squash all UIDs and GIDs to those of the user running `snakemake` so that the user running `snakemake` has access to all files created by worker instances.
+We squash all UIDs and GIDs to those of the owner of SHARED_DIR so that Snakemake has access permissions to all files created by worker instances.
 
 `snakemake-float.yaml`
 ```yaml

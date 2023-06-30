@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import sys
 import subprocess
 
@@ -53,4 +54,9 @@ if __name__ == '__main__':
 
     float_status = FloatStatus()
     status = float_status.job_status(jobid)
+
+    # S3FS may cache file nonexistence: force cache refresh
+    if status == 'success':
+        os.listdir()
+
     print(status)

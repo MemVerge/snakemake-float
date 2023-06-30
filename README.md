@@ -20,7 +20,7 @@ In your Snakemake working directory, create file `snakemake-float.yaml` based on
 SHARED_DIR SUBNET(rw,sync,all_squash,anonuid=UID,anongid=GID)
 ```
 
-We squash all UIDs and GIDs to those of the owner of SHARED_DIR so that Snakemake has access permissions to all files created by worker instances.
+We squash all NFS clients to the `UID` and `GID` of the owner of `SHARED_DIR` so that the user running `snakemake` has access permissions to all files created by worker instances.
 
 `snakemake-float.yaml`
 ```yaml
@@ -49,7 +49,3 @@ extra: "--migratePolicy [enable=true]"
 ```
 
 `snakemake --profile snakemake-float --jobs VALUE`
-
-## Known issues
-
-S3FS: Snakemake will not detect output files by itself. Running `ls` will trigger it to do so for some reason. Maybe run a script that runs `ls` at some interval.

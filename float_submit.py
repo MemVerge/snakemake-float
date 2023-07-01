@@ -51,8 +51,22 @@ if __name__ == '__main__':
     with open(jobscript, 'r') as js:
         script_lines = js.readlines()
 
+    script_lines.insert(3, f"cd {float_submit.mount_point()}\n")
+
+    # Hack to allow --use-conda
+    exec_job_cmd = script_lines[-1]
+    if '--use-conda' in exec_job_cmd:
+        conda_prefix = '/memverge/.snakemake'
+        script_lines[3: 3] = [
+            f"mkdir -p {conda_prefix}/conda\n",
+            f"mkdir -p {conda_prefix}/conda-archive\n"
+        ]
+
+        part = list(exec_job_cmd.partition(' --use-conda'))
+        part[1] += f" --conda-prefix '{conda_prefix}'"
+        script_lines[-1] = ''.join(part)
+
     with open(jobscript, 'w') as js:
-        script_lines.insert(3, f"cd {float_submit.mount_point()}\n")
         js.writelines(script_lines)
 
     jobid = float_submit.submit_job(jobscript)

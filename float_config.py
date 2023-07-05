@@ -2,6 +2,7 @@
 
 import yaml
 
+from snakemake.common import get_container_image
 
 class FloatConfig:
     _CONFIG_FILE = 'snakemake-float.yaml'
@@ -11,7 +12,7 @@ class FloatConfig:
 
     def __init__(self, config_file=_CONFIG_FILE):
         self._parameters = {
-            'image': 'snakemake/snakemake:latest',
+            'image': get_container_image(),
             'cpu': '2',
             'mem': '4'
         }

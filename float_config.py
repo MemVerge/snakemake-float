@@ -4,6 +4,7 @@ import yaml
 
 from snakemake.common import get_container_image
 
+
 class FloatConfig:
     _CONFIG_FILE = 'snakemake-float.yaml'
     _REQUIRED_KWARGS = ('address', 'username', 'password', 'dataVolume')

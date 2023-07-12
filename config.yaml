@@ -4,3 +4,4 @@ cluster-status: "float_status.py"
 cluster-cancel: "float_cancel.py"
 no-shared-fs: true
 rerun-incomplete: true
+retries: 10

@@ -11,6 +11,9 @@ from float_config import FloatConfig
 
 
 class FloatSubmit:
+    _AWS_CPU_UPPER_BOUND = 192
+    _AWS_MEM_UPPER_BOUND = 1024
+
     def __init__(self):
         self._config = FloatConfig()
 
@@ -26,12 +29,12 @@ class FloatSubmit:
         job_properties = read_job_properties(jobscript)
         if 'cpu' not in config_parameters:
             cpu = job_properties.get('threads', 2)
-            cmd += f" --cpu {cpu}"
+            cmd += f" --cpu {cpu}:{self._AWS_CPU_UPPER_BOUND}"
 
         if 'mem' not in config_parameters:
             mem_MiB = job_properties.get('resources', {}).get('mem_mib', 4096)
             mem_GiB = math.ceil(mem_MiB / 1024)
-            cmd += f" --mem {mem_GiB}"
+            cmd += f" --mem {mem_GiB}:{self._AWS_MEM_UPPER_BOUND}"
 
         cmd += f" --job {job_file}"
         cmd += f" {config_parameters.get(cfg.SUBMIT_EXTRA, '')}"

@@ -3,8 +3,6 @@
 import sys
 import subprocess
 
-import math
-
 from snakemake.utils import read_job_properties
 
 from float_config import FloatConfig
@@ -28,12 +26,12 @@ class FloatSubmit:
 
         job_properties = read_job_properties(jobscript)
         if 'cpu' not in config_parameters:
-            cpu = job_properties.get('threads', 2)
+            cpu = max(job_properties.get('threads'), 2)
             cmd += f" --cpu {cpu}:{self._AWS_CPU_UPPER_BOUND}"
 
         if 'mem' not in config_parameters:
-            mem_MiB = job_properties.get('resources', {}).get('mem_mib', 4096)
-            mem_GiB = math.ceil(mem_MiB / 1024)
+            mem_MiB = max(job_properties.get('resources', {}).get('mem_mib'), 4096)
+            mem_GiB = (mem_MiB + 1023) // 1024
             cmd += f" --mem {mem_GiB}:{self._AWS_MEM_UPPER_BOUND}"
 
         cmd += f" --job {job_file}"

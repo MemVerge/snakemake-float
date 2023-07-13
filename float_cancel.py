@@ -20,7 +20,7 @@ class FloatCancel:
 
         cmd.extend(['--job', jobid])
 
-        subprocess.run(cmd)
+        subprocess.check_call(cmd)
 
 
 if __name__ == '__main__':

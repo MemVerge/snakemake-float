@@ -14,8 +14,6 @@ class FloatConfig:
     def __init__(self, config_file=_CONFIG_FILE):
         self._parameters = {
             'image': get_container_image(),
-            'cpu': '2',
-            'mem': '4'
         }
 
         with open(config_file) as cf:

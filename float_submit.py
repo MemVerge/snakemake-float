@@ -3,6 +3,8 @@
 import sys
 import subprocess
 
+import math
+
 from snakemake.utils import read_job_properties
 
 from float_config import FloatConfig
@@ -20,6 +22,16 @@ class FloatSubmit:
         for key, value in config_parameters.items():
             if key != cfg.SUBMIT_EXTRA:
                 cmd += f" --{key} {value}"
+
+        job_properties = read_job_properties(jobscript)
+        if 'cpu' not in config_parameters:
+            cpu = job_properties.get('threads', 2)
+            cmd += f" --cpu {cpu}"
+
+        if 'mem' not in config_parameters:
+            mem_MiB = job_properties.get('resources', {}).get('mem_mib', 4096)
+            mem_GiB = math.ceil(mem_MiB / 1024)
+            cmd += f" --mem {mem_GiB}"
 
         cmd += f" --job {job_file}"
         cmd += f" {config_parameters.get(cfg.SUBMIT_EXTRA, '')}"
@@ -44,7 +56,6 @@ class FloatSubmit:
 
 if __name__ == '__main__':
     jobscript = sys.argv[1]
-    job_properties = read_job_properties(jobscript)
 
     float_submit = FloatSubmit()
 

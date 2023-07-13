@@ -31,16 +31,17 @@ class FloatStatus:
     }
 
     def __init__(self):
+        self._cmd = ['float', 'show']
+
         self._config = FloatConfig()
+        config_parameters = self._config.parameters()
+
+        self._cmd.extend(['-a', config_parameters['address']])
+        self._cmd.extend(['-u', config_parameters['username']])
+        self._cmd.extend(['-p', config_parameters['password']])
 
     def job_status(self, jobid):
-        cmd = ['float', 'show']
-
-        config_parameters = self._config.parameters()
-        cmd.extend(['-a', config_parameters['address']])
-        cmd.extend(['-u', config_parameters['username']])
-        cmd.extend(['-p', config_parameters['password']])
-
+        cmd = self._cmd
         cmd.extend(['--job', jobid])
 
         output = subprocess.check_output(cmd).decode()

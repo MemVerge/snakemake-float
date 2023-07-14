@@ -41,7 +41,7 @@ class FloatSubmit:
         cmd += f" {config_parameters.get(cfg.SUBMIT_EXTRA, '')}"
 
         output = subprocess.check_output(cmd, shell=True).decode()
-        jobid = output[len('id: '): output.index('\n')]
+        jobid = output.partition('id: ')[2].partition('\n')[0]
         return jobid
 
     def mount_point(self):

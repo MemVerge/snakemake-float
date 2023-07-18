@@ -48,7 +48,10 @@ class FloatStatus:
         try:
             output = subprocess.check_output(cmd).decode()
         except subprocess.CalledProcessError:
-            logger.error(f"Status check failed for job with id: {jobid} With command: {cmd}")
+            logger.error(
+                f"Status check failed for job with id: {jobid}"
+                f"With command: {cmd}"
+            )
             raise
 
         status_part = output.partition('status: ')[2].partition('\n')[0]

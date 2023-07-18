@@ -6,6 +6,7 @@ import subprocess
 from snakemake.utils import read_job_properties
 
 from float_config import FloatConfig
+from float_utils import logger
 
 
 class FloatSubmit:
@@ -42,6 +43,11 @@ class FloatSubmit:
 
         output = subprocess.check_output(cmd, shell=True).decode()
         jobid = output.partition('id: ')[2].partition('\n')[0]
+
+        logger.info(f"Submitted float job with id: {jobid}")
+        logger.debug(f"With command: {cmd}")
+        logger.debug(f"OpCenter response: {output}")
+
         return jobid
 
     def mount_point(self):
@@ -53,6 +59,7 @@ class FloatSubmit:
         colon = dv.index(':', start)
 
         if colon == -1:
+            logger.error('dataVolume mount point not specified')
             raise ValueError('Please specify dataVolume mount point')
 
         return dv[colon + 1:]
@@ -63,14 +70,19 @@ if __name__ == '__main__':
 
     float_submit = FloatSubmit()
 
-    with open(jobscript, 'r') as js:
-        script_lines = js.readlines()
+    try:
+        with open(jobscript, 'r') as js:
+            script_lines = js.readlines()
+    except OSError:
+        logger.error(f"Cannot open jobscript for reading: {jobscript}")
+        raise
 
     script_lines.insert(3, f"cd {float_submit.mount_point()}\n")
 
     # Hack to allow --use-conda
     exec_job_cmd = script_lines[-1]
     if '--use-conda' in exec_job_cmd:
+        logger.debug('Prefixing jobscript to allow --use-conda')
         conda_prefix = '/memverge/.snakemake'
         script_lines[3: 3] = [
             f"mkdir -p {conda_prefix}/conda\n",
@@ -81,8 +93,12 @@ if __name__ == '__main__':
         part[1] += f" --conda-prefix '{conda_prefix}'"
         script_lines[-1] = ''.join(part)
 
-    with open(jobscript, 'w') as js:
-        js.writelines(script_lines)
+    try:
+        with open(jobscript, 'w') as js:
+            js.writelines(script_lines)
+    except OSError:
+        logger.error(f"Cannot open jobscript for writing: {jobscript}")
+        raise
 
     jobid = float_submit.submit_job(jobscript)
     print(jobid)

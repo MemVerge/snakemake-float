@@ -5,6 +5,7 @@ import sys
 import subprocess
 
 from float_config import FloatConfig
+from float_utils import logger
 
 
 class FloatStatus:
@@ -47,6 +48,13 @@ class FloatStatus:
         output = subprocess.check_output(cmd).decode()
         status_part = output.partition('status: ')[2].partition('\n')[0]
         status = self._STATUS_MAP[status_part]
+
+        # There are too many status checks to log for normal use
+        logger.debug(f"Submitted float show for job: {jobid}")
+        logger.debug(f"With command: {cmd}")
+        logger.debug(f"Obtained status: {status_part}")
+        logger.debug(f"OpCenter response: {output}")
+
         return status
 
 

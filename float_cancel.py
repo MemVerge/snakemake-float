@@ -4,6 +4,7 @@ import sys
 import subprocess
 
 from float_config import FloatConfig
+from float_utils import logger
 
 
 class FloatCancel:
@@ -22,6 +23,9 @@ class FloatCancel:
         cmd.extend(['--job', jobid])
 
         subprocess.Popen(cmd)
+
+        logger.info(f"Submitted float cancel for job: {jobid}")
+        logger.debug(f"With command: {cmd}")
 
 
 if __name__ == '__main__':

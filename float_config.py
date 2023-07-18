@@ -4,6 +4,8 @@ import yaml
 
 from snakemake.common import get_container_image
 
+from float_utils import logger
+
 
 class FloatConfig:
     _CONFIG_FILE = 'snakemake-float.yaml'
@@ -16,14 +18,21 @@ class FloatConfig:
             'image': get_container_image(),
         }
 
-        with open(config_file) as cf:
-            kwargs = yaml.safe_load(cf)
+        try:
+            with open(config_file) as cf:
+                kwargs = yaml.safe_load(cf)
+        except OSError:
+            logger.error(f"Cannot open config file: {self._CONFIG_FILE}")
+            raise
+        except yaml.YAMLError:
+            logger.error(f"Cannot load YAML: {self._CONFIG_FILE}")
+            raise
 
         for kwarg in self._REQUIRED_KWARGS:
             if kwarg not in kwargs:
-                raise TypeError(
-                    f"{config_file} missing required argument: '{kwarg}'"
-                )
+                msg = f"{config_file} missing required argument: '{kwarg}'"
+                logger.error(msg)
+                raise TypeError(msg)
 
         self._parameters.update(kwargs)
 

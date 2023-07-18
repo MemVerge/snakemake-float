@@ -2,6 +2,7 @@ jobscript: "float-jobscript.sh"
 cluster: "float_submit.py"
 cluster-status: "float_status.py"
 cluster-cancel: "float_cancel.py"
+cluster-sidecar: "float_sidecar.py"
 no-shared-fs: true
 rerun-incomplete: true
 retries: 10

@@ -45,7 +45,12 @@ class FloatStatus:
         cmd = self._cmd
         cmd.extend(['--job', jobid])
 
-        output = subprocess.check_output(cmd).decode()
+        try:
+            output = subprocess.check_output(cmd).decode()
+        except subprocess.CalledProcessError:
+            logger.error(f"Status check failed for job with id: {jobid} With command: {cmd}")
+            raise
+
         status_part = output.partition('status: ')[2].partition('\n')[0]
         status = self._STATUS_MAP[status_part]
 

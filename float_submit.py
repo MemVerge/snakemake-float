@@ -41,7 +41,12 @@ class FloatSubmit:
         cmd += f" --job {job_file}"
         cmd += f" {config_parameters.get(cfg.SUBMIT_EXTRA, '')}"
 
-        output = subprocess.check_output(cmd, shell=True).decode()
+        try:
+            output = subprocess.check_output(cmd, shell=True).decode()
+        except subprocess.CalledProcessError:
+            logger.error(f"Job submission failed, with command: {cmd}")
+            raise
+
         jobid = output.partition('id: ')[2].partition('\n')[0]
 
         logger.info(f"Submitted float job with id: {jobid}")

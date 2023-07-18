@@ -6,7 +6,7 @@ import logging
 
 LOG_FILE = (
     '.snakemake/log/'
-    f"{os.environ.get('SNAKEMAKE_CLUSTER_SIDECAR_VARS', '')}"
+    f"{os.environ.get('SNAKEMAKE_CLUSTER_SIDECAR_VARS', 'snakemake')}"
     '.float.log'
 )
 

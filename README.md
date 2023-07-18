@@ -49,3 +49,14 @@ extra: "--migratePolicy [enable=true]"
 ```
 
 `snakemake --profile snakemake-float --jobs VALUE`
+
+### Package management
+
+Additionally tell `snakemake` to `--use-conda` for workflows requiring packages installable by Conda.
+Containers are not supported.
+
+### Logging
+
+`cluster-sidecar` is specified in `config.yaml` to set the environment variable `SNAKEMAKE_CLUSTER_SIDECAR_VARS` as the time, which is used in determining the log file name for the user invocation of `snakemake`. Log files are stored in `.snakemake/log/` in the working directory.
+
+There is currently a minor bug where termination of the sidecar via CTRL-C does not behave as it should. Optionally disable the cluster sidecar by removing it from `cluster.yaml`, which will cause the log file to be named `snakemake.float.log` instead.

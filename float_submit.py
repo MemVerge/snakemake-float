@@ -78,6 +78,7 @@ if __name__ == '__main__':
     try:
         with open(jobscript, 'r') as js:
             script_lines = js.readlines()
+            logger.debug('Opened jobscript for reading')
     except OSError:
         logger.error(f"Cannot open jobscript for reading: {jobscript}")
         raise
@@ -101,6 +102,7 @@ if __name__ == '__main__':
     try:
         with open(jobscript, 'w') as js:
             js.writelines(script_lines)
+            logger.debug('Wrote modifications to jobscript ')
     except OSError:
         logger.error(f"Cannot open jobscript for writing: {jobscript}")
         raise

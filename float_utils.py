@@ -10,7 +10,20 @@ LOG_FILE = (
     '.float.log'
 )
 
-log_level = logging.INFO
+log_level = os.environ.get('SNAKEMAKE_FLOAT_LOG_LEVEL', 'INFO')
+match log_level:
+    case 'CRITICAL':
+        log_level = logging.CRITICAL
+    case 'ERROR':
+        log_level = logging.ERROR
+    case 'WARNING':
+        log_level = logging.WARNING
+    case 'INFO':
+        log_level = logging.INFO
+    case 'DEBUG':
+        log_level = logging.DEBUG
+    case _:
+        log_level = logging.NOTSET
 
 logging.basicConfig(
     filename=LOG_FILE,

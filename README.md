@@ -60,3 +60,5 @@ Containers are not supported.
 `cluster-sidecar` is specified in `config.yaml` to set the environment variable `SNAKEMAKE_CLUSTER_SIDECAR_VARS` as the time, which is used in determining the log file name for the user invocation of `snakemake`. Log files are stored in `.snakemake/log/` in the working directory.
 
 There is currently a minor bug where termination of the sidecar via CTRL-C does not behave as it should. Optionally disable the cluster sidecar by removing it from `cluster.yaml`, which will cause the log file to be named `snakemake.float.log` instead.
+
+Set log level by setting environment variable `SNAKEMAKE_FLOAT_LOG_LEVEL` as one of `CRITICAL`, `ERROR`, `WARNING`, `INFO`, or `DEBUG`. The default is `INFO`.

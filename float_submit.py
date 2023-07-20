@@ -51,7 +51,7 @@ class FloatSubmit:
 
         logger.info(f"Submitted float job with id: {jobid}")
         logger.debug(f"With command: {cmd}")
-        logger.debug(f"OpCenter response: {output}")
+        logger.debug(f"OpCenter response:\n{output}")
 
         return jobid
 

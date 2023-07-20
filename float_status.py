@@ -61,7 +61,7 @@ class FloatStatus:
         logger.debug(f"Submitted float show for job: {jobid}")
         logger.debug(f"With command: {cmd}")
         logger.debug(f"Obtained status: {status_part}")
-        logger.debug(f"OpCenter response: {output}")
+        logger.debug(f"OpCenter response:\n{output}")
 
         return status
 

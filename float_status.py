@@ -39,7 +39,7 @@ class FloatStatus:
         config_parameters = self._config.parameters()
 
         self._cmd.extend(['-a', config_parameters['address']])
-        self._cmd.extend(['-u', "config_parameters['username']"])
+        self._cmd.extend(['-u', config_parameters['username']])
         self._cmd.extend(['-p', config_parameters['password']])
 
     def job_status(self, jobid):

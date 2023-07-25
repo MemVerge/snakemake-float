@@ -22,10 +22,10 @@ class FloatConfig:
             with open(config_file) as cf:
                 kwargs = yaml.safe_load(cf)
         except OSError:
-            logger.error(f"Cannot open config file: {self._CONFIG_FILE}")
+            logger.exception('Cannot open float config file')
             raise
         except yaml.YAMLError:
-            logger.error(f"Cannot load YAML: {self._CONFIG_FILE}")
+            logger.exception(f"Cannot load YAML: {self._CONFIG_FILE}")
             raise
 
         for kwarg in self._REQUIRED_KWARGS:

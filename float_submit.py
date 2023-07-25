@@ -44,7 +44,7 @@ class FloatSubmit:
         try:
             output = subprocess.check_output(cmd, shell=True).decode()
         except subprocess.CalledProcessError:
-            logger.error(f"Job submission failed, with command: {cmd}")
+            logger.exception('Failed to submit job')
             raise
 
         jobid = output.partition('id: ')[2].partition('\n')[0]
@@ -80,7 +80,7 @@ if __name__ == '__main__':
             script_lines = js.readlines()
             logger.debug('Opened jobscript for reading')
     except OSError:
-        logger.error(f"Cannot open jobscript for reading: {jobscript}")
+        logger.exception('Cannot open jobscript for reading')
         raise
 
     script_lines.insert(3, f"cd {float_submit.mount_point()}\n")
@@ -104,7 +104,7 @@ if __name__ == '__main__':
             js.writelines(script_lines)
             logger.debug('Wrote modifications to jobscript ')
     except OSError:
-        logger.error(f"Cannot open jobscript for writing: {jobscript}")
+        logger.exception('Cannot open jobscript for writing')
         raise
 
     jobid = float_submit.submit_job(jobscript)

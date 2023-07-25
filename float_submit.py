@@ -38,9 +38,25 @@ class FloatSubmit:
             mem_GiB = (mem_MiB + 1023) // 1024
             cmd += f" --mem {mem_GiB}:{self._AWS_MEM_UPPER_BOUND}"
 
+        try:
+            with open(job_file, 'r') as jf:
+                script_lines = jf.readlines()
+                logger.debug('Opened job file for reading')
+        except OSError:
+            logger.exception('Cannot open job file for reading')
+            raise
+
+        exec_job_cmd = script_lines[-1]
+        attempt = exec_job_cmd.partition(' --attempt ')[2].partition(' ')[0]
+
+        snakejob = job_properties.get('jobid', 'N/A')
+        job_name = f"snakemake-job{snakejob}-attempt{attempt}"
+        cmd += f" --name {job_name}"
+
         cmd += f" --job {job_file}"
         cmd += f" {config_parameters.get(cfg.SUBMIT_EXTRA, '')}"
 
+        logger.info(f"Attempt {attempt} to submit Snakemake job {snakejob}")
         try:
             output = subprocess.check_output(cmd, shell=True).decode()
         except subprocess.CalledProcessError:
@@ -49,7 +65,10 @@ class FloatSubmit:
 
         jobid = output.partition('id: ')[2].partition('\n')[0]
 
-        logger.info(f"Submitted float job with id: {jobid}")
+        logger.info(
+            f"Submitted Snakemake job {snakejob}"
+            f" as float job {jobid} with name {job_name}"
+        )
         logger.debug(f"With command: {cmd}")
         logger.debug(f"OpCenter response:\n{output}")
 
@@ -95,9 +114,9 @@ if __name__ == '__main__':
             f"mkdir -p {conda_prefix}/conda-archive\n"
         ]
 
-        part = list(exec_job_cmd.partition(' --use-conda'))
-        part[1] += f" --conda-prefix '{conda_prefix}'"
-        script_lines[-1] = ''.join(part)
+        conda_part = list(exec_job_cmd.partition(' --use-conda'))
+        conda_part[1] += f" --conda-prefix '{conda_prefix}'"
+        script_lines[-1] = ''.join(conda_part)
 
     try:
         with open(jobscript, 'w') as js:

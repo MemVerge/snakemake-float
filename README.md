@@ -8,7 +8,19 @@ Snakemake profile for MemVerge Memory Machine Cloud (float).
 
 ## Configuration
 
-In your Snakemake working directory, create file `snakemake-float.yaml` based on the template, specifying arguments to pass to  `float` for job submission. The `extra` option specifies a string to append to the `float` command.
+Set the following environment variables:
+* `MMC_ADDRESS`
+* `MMC_USERNAME`
+* `MMC_PASSWORD`
+
+In your Snakemake working directory, create file `snakemake-float.yaml` based on the template, specifying arguments to pass to  `float` for job submission.
+* `work-dir` [required]: specifies the work directory for all worker nodes.
+* `data-volumes` [required]: specifies a list of data volumes for all worker nodes.
+* `job-prefix` [optional]: specifies a string to prefix job names with.
+* `base-image` [optional]: specifies a string to prefix job names with.
+* `cpu` [optional]: specifies cpu for all worker nodes. Overrides inferred values from workflow.
+* `mem` [optional]: specifies mem for all worker nodes. Overrides inferred values from workflow.
+* `submit-extra` [optional]: specifies a string to append to the `float` command.
 
 ## Examples
 
@@ -24,11 +36,10 @@ We squash all NFS clients to the `UID` and `GID` of the owner of `SHARED_DIR` so
 
 `snakemake-float.yaml`
 ```yaml
-address: "OPCENTER_ADDRESS"
-username: "admin"
-password: "memverge"
-dataVolume: "nfs://NFS_SERVER_ADDRESS/SHARED_DIR:MOUNT_POINT"
-extra: "--migratePolicy [enable=true]"
+work-dir: "MOUNT_POINT"
+data-volumes:
+- "nfs://NFS_SERVER_ADDRESS/SHARED_DIR:MOUNT_POINT"
+submit-extra: "--migratePolicy [enable=true]"
 ```
 
 `snakemake --profile snakemake-float --jobs VALUE`
@@ -42,18 +53,19 @@ We set `disable_noobj_cache` so that `snakemake` can correctly detect output fil
 
 `snakemake-float.yaml`
 ```yaml
-address: "OPCENTER_ADDRESS"
-username: "admin"
-password: "memverge"
-dataVolume: "[mode=rw]s3://BUCKET_NAME:MOUNT_POINT"
-extra: "--migratePolicy [enable=true]"
+work-dir: "MOUNT_POINT1"
+data-volumes:
+- "[mode=rw]s3://BUCKET_NAME1:MOUNT_POINT1"
+- "[mode=rw]s3://BUCKET_NAME2:MOUNT_POINT2"
+submit-extra: "--migratePolicy [enable=true]"
 ```
 
 `snakemake --profile snakemake-float --jobs VALUE`
 
 ### Package management
 
-Additionally tell `snakemake` to `--use-conda` for workflows requiring packages installable by Conda.
+Additionally tell `snakemake` to `--use-conda` for workflows requiring packages installable by Conda. Specifying `--conda-frontend conda` reduces the failure rate as compared to Mamba if migration is enabled.
+
 Containers are not supported.
 
 ### Logging

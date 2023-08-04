@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import os
+
 import yaml
 
 from snakemake.common import get_container_image
@@ -9,13 +11,29 @@ from float_utils import logger
 
 class FloatConfig:
     _CONFIG_FILE = 'snakemake-float.yaml'
-    _REQUIRED_KWARGS = ('address', 'username', 'password', 'dataVolume')
-
-    SUBMIT_EXTRA = 'extra'
+    _REQUIRED_KWARGS = {'work-dir', 'data-volumes'}
+    _SUPPORTED_KWARGS = _REQUIRED_KWARGS.union({
+        'job-prefix',
+        'base-image',
+        'cpu',
+        'mem',
+        'submit-extra'
+    })
 
     def __init__(self, config_file=_CONFIG_FILE):
+        try:
+            address = os.environ['MMC_ADDRESS']
+            username = os.environ['MMC_USERNAME']
+            password = os.environ['MMC_PASSWORD']
+        except KeyError:
+            logger.exception('Missing required environment variable')
+            raise
+
         self._parameters = {
-            'image': get_container_image(),
+            'address': address,
+            'username': username,
+            'password': password,
+            'base-image': get_container_image()
         }
 
         try:
@@ -33,6 +51,11 @@ class FloatConfig:
                 msg = f"{config_file} missing required argument: '{kwarg}'"
                 logger.error(msg)
                 raise TypeError(msg)
+
+        for kwarg in kwargs:
+            if kwarg not in self._SUPPORTED_KWARGS:
+                msg = f"{config_file} has unsupported argument: '{kwarg}'"
+                logger.warning(msg)
 
         self._parameters.update(kwargs)
 

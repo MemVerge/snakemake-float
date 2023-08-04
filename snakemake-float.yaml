@@ -1,5 +1,8 @@
-address: ""
-username: ""
-password: ""
-dataVolume: ""
-extra: ""
+job-prefix: ""
+base-image: ""
+work-dir: ""
+data-volumes:
+- ""
+cpu: ""
+mem: ""
+submit-extra: ""

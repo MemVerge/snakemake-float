@@ -18,19 +18,29 @@ class FloatSubmit:
 
     def submit_job(self, job_file):
         cfg = self._config
+        config_parameters = cfg.parameters()
+
         cmd = 'float submit'
 
-        config_parameters = cfg.parameters()
-        for key, value in config_parameters.items():
-            if key != cfg.SUBMIT_EXTRA:
-                cmd += f" --{key} {value}"
+        cmd += f" -a {config_parameters['address']}"
+        cmd += f" -u {config_parameters['username']}"
+        cmd += f" -p {config_parameters['password']}"
+
+        cmd += f" --image {config_parameters['base-image']}"
+
+        for data_volume in config_parameters['data-volumes']:
+            cmd += f" --dataVolume {data_volume}"
 
         job_properties = read_job_properties(jobscript)
-        if 'cpu' not in config_parameters:
+        if 'cpu' in config_parameters:
+            cmd += f" --cpu {config_parameters['cpu']}"
+        else:
             cpu = max(job_properties.get('threads'), 2)
             cmd += f" --cpu {cpu}:{self._AWS_CPU_UPPER_BOUND}"
 
-        if 'mem' not in config_parameters:
+        if 'mem' in config_parameters:
+            cmd += f" --mem {config_parameters['mem']}"
+        else:
             mem_MiB = max(
                 job_properties.get('resources', {}).get('mem_mib'),
                 4096
@@ -50,11 +60,13 @@ class FloatSubmit:
         attempt = exec_job_cmd.partition(' --attempt ')[2].partition(' ')[0]
 
         snakejob = job_properties.get('jobid', 'N/A')
-        job_name = f"snakemake-job{snakejob}-attempt{attempt}"
+
+        job_prefix = config_parameters.get('job-prefix', 'snakemake')
+        job_name = f"{job_prefix}-job_{snakejob}-attempt_{attempt}"
         cmd += f" --name {job_name}"
 
         cmd += f" --job {job_file}"
-        cmd += f" {config_parameters.get(cfg.SUBMIT_EXTRA, '')}"
+        cmd += f" {config_parameters.get('submit-extra', '')}"
 
         logger.info(f"Attempt {attempt} to submit Snakemake job {snakejob}")
         try:
@@ -74,19 +86,8 @@ class FloatSubmit:
 
         return jobid
 
-    def mount_point(self):
-        cfg = self._config
-        config_parameters = cfg.parameters()
-
-        dv = config_parameters['dataVolume']
-        start = dv.index('//')
-        colon = dv.index(':', start)
-
-        if colon == -1:
-            logger.error('dataVolume mount point not specified')
-            raise ValueError('Please specify dataVolume mount point')
-
-        return dv[colon + 1:]
+    def work_dir(self):
+        return self._config.parameters()['work-dir']
 
 
 if __name__ == '__main__':
@@ -102,7 +103,7 @@ if __name__ == '__main__':
         logger.exception('Cannot open jobscript for reading')
         raise
 
-    script_lines.insert(3, f"cd {float_submit.mount_point()}\n")
+    script_lines.insert(3, f"cd {float_submit.work_dir()}\n")
 
     # Hack to allow --use-conda
     exec_job_cmd = script_lines[-1]

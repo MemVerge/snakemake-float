@@ -35,9 +35,10 @@ extra: "--migratePolicy [enable=true]"
 
 ### S3FS shared working directory
 
-`s3fs BUCKET_NAME SHARED_DIR -o umask=0000`
+`s3fs BUCKET_NAME SHARED_DIR -o umask=0000 -o disable_noobj_cache`
 
 We set `umask` so that the user running `snakemake` has access to all files created by worker instances.
+We set `disable_noobj_cache` so that `snakemake` can correctly detect output files.
 
 `snakemake-float.yaml`
 ```yaml

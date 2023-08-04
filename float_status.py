@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import os
 import sys
 import time
 import subprocess
@@ -88,9 +87,5 @@ if __name__ == '__main__':
     if status is None:
         logger.info(f"Failed to obtain status: marking job {jobid} as failed")
         status = 'failed'
-
-    # S3FS may cache file nonexistence: force cache refresh
-    if status == 'success':
-        os.listdir()
 
     print(status)

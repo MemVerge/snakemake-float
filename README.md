@@ -48,8 +48,7 @@ submit-extra: "--migratePolicy [enable=true]"
 
 `s3fs BUCKET_NAME SHARED_DIR -o umask=0000 -o disable_noobj_cache`
 
-We set `umask` so that the user running `snakemake` has access to all files created by worker instances.
-We set `disable_noobj_cache` so that `snakemake` can correctly detect output files.
+We set `umask` so that the user running `snakemake` has access to all files created by worker instances. We set `disable_noobj_cache` so that `snakemake` can correctly detect output files.
 
 `snakemake-float.yaml`
 ```yaml
@@ -64,7 +63,7 @@ submit-extra: "--migratePolicy [enable=true]"
 
 ### Package management
 
-Additionally tell `snakemake` to `--use-conda` for workflows requiring packages installable by Conda. Specifying `--conda-frontend conda` reduces the failure rate as compared to Mamba if migration is enabled.
+Additionally tell `snakemake` to `--use-conda` for workflows requiring packages installable by Conda. Specifying `--conda-frontend conda` reduces the failure rate as compared to Mamba if migration is enabled, but may be problematic if there are local rules.
 
 Containers are not supported.
 

@@ -63,7 +63,7 @@ submit-extra: "--migratePolicy [enable=true]"
 
 ### Package management
 
-Additionally tell `snakemake` to `--use-conda` for workflows requiring packages installable by Conda. Specifying `--conda-frontend conda` reduces the failure rate as compared to Mamba if migration is enabled, but may be problematic if there are local rules.
+Additionally tell `snakemake` to `--use-conda` for workflows requiring packages installable by Conda.
 
 Containers are not supported.
 

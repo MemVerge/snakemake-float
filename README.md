@@ -63,7 +63,7 @@ submit-extra: "--migratePolicy [enable=true]"
 
 ### Package management
 
-Additionally tell `snakemake` to `--use-conda` for workflows requiring packages installable by Conda.
+Additionally tell `snakemake` to `--use-conda` for workflows requiring packages installable by Conda. When using Conda with S3FS, provide `snakemake` with a `--conda-prefix` that is not within the S3FS shared working directory.
 
 Containers are not supported.
 

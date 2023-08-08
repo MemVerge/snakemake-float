@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import re
 import sys
 import subprocess
 
@@ -115,8 +116,12 @@ if __name__ == '__main__':
             f"mkdir -p {conda_prefix}/conda-archive\n"
         ]
 
+        # Replace conda-frontend and conda-prefix in jobscript
+        exec_job_cmd = re.sub(r" --conda-frontend '.+'", '', exec_job_cmd)
+        exec_job_cmd = re.sub(r" --conda-prefix '.+'", '', exec_job_cmd)
+
         conda_part = list(exec_job_cmd.partition(' --use-conda'))
-        conda_part[1] += f" --conda-frontend conda --conda-prefix '{conda_prefix}'"
+        conda_part[1] += f" --conda-frontend 'conda' --conda-prefix '{conda_prefix}'"
         script_lines[-1] = ''.join(conda_part)
 
     try:

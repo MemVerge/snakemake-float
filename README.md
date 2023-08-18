@@ -1,6 +1,6 @@
 # snakemake-float
 
-Snakemake profile for MemVerge Memory Machine Cloud (float).
+Snakemake cluster execution profile plugin to allow executing Snakemake jobs using MemVerge Memory Machine Cloud (float).
 
 ## Install profile
 

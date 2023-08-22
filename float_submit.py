@@ -21,7 +21,7 @@ class FloatSubmit:
         cfg = self._config
         config_parameters = cfg.parameters()
 
-        cmd = 'float submit'
+        cmd = 'float submit --force'
 
         cmd += f" -a {config_parameters['address']}"
         cmd += f" -u {config_parameters['username']}"

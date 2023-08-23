@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import json
 import sys
 import time
 import subprocess
@@ -32,7 +33,7 @@ class FloatStatus:
     }
 
     def __init__(self):
-        self._cmd = ['float', 'show']
+        self._cmd = ['float', 'show', '--format', 'json']
 
         self._config = FloatConfig()
         config_parameters = self._config.parameters()
@@ -46,18 +47,28 @@ class FloatStatus:
         cmd.extend(['--job', jobid])
 
         try:
-            output = subprocess.check_output(cmd).decode()
+            output = subprocess.check_output(cmd)
+            output = json.loads(output.decode())
+            float_status = output["status"]
         except subprocess.CalledProcessError:
-            logger.exception(f"Failed to obtain status for job: {jobid}")
+            msg = f"Failed to get show response for job: {jobid}"
+            logger.exception(msg)
+            raise
+        except (UnicodeError, json.JSONDecodeError):
+            msg = f"Failed to decode show response for job: {jobid}"
+            logger.exception(msg)
+            raise
+        except KeyError:
+            msg = f"Failed to obtain status for job: {jobid}"
+            logger.exception(msg)
             raise
 
-        status_part = output.partition('status: ')[2].partition('\n')[0]
-        status = self._STATUS_MAP[status_part]
+        status = self._STATUS_MAP[float_status]
 
         # There are too many status checks to log for normal use
         logger.debug(f"Submitted float show for job: {jobid}")
         logger.debug(f"With command: {cmd}")
-        logger.debug(f"Obtained status: {status_part}")
+        logger.debug(f"Obtained float status: {float_status}")
         logger.debug(f"OpCenter response:\n{output}")
 
         return status

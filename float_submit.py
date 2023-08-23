@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import json
 import re
 import sys
 import subprocess
@@ -21,7 +22,7 @@ class FloatSubmit:
         cfg = self._config
         config_parameters = cfg.parameters()
 
-        cmd = 'float submit --force'
+        cmd = 'float submit --force --format json'
 
         cmd += f" -a {config_parameters['address']}"
         cmd += f" -u {config_parameters['username']}"
@@ -76,7 +77,22 @@ class FloatSubmit:
             logger.exception('Failed to submit job')
             raise
 
-        jobid = output.partition('id: ')[2].partition('\n')[0]
+        try:
+            output = subprocess.check_output(cmd, shell=True)
+            output = json.loads(output.decode())
+            jobid = output["id"]
+        except subprocess.CalledProcessError:
+            msg = "Failed to submit job"
+            logger.exception(msg)
+            raise
+        except (UnicodeError, json.JSONDecodeError):
+            msg = "Failed to decode submit response"
+            logger.exception(msg)
+            raise
+        except KeyError:
+            msg = "Failed to obtain float job id"
+            logger.exception(msg)
+            raise
 
         logger.info(
             f"Submitted Snakemake job {snakejob}"

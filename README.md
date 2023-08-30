@@ -6,7 +6,7 @@ Snakemake cluster execution profile plugin to allow executing Snakemake jobs usi
 
 First, install [Mamba](https://mamba.readthedocs.io/en/latest/mamba-installation.html#mamba-install) (alternatively, [Conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html)) and [Snakemake](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html).
 
-`git clone https://github.com/edwinyyyu/snakemake-float.git ~/.config/snakemake/snakemake-float/`
+`git clone https://github.com/MemVerge/snakemake-float.git ~/.config/snakemake/snakemake-float/`
 
 ## Configuration
 

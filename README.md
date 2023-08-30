@@ -19,7 +19,7 @@ In the Snakemake working directory, create file `snakemake-float.yaml` based on 
 * `work-dir` [required]: specifies the work directory for all worker nodes.
 * `data-volumes` [required]: specifies a list of data volumes for all worker nodes.
 * `job-prefix` [optional]: specifies a string to prefix job names with.
-* `base-image` [optional]: specifies a string to prefix job names with.
+* `base-image` [optional]: specifies a container image to execute jobs with. Must have Snakemake installed.
 * `cpu` [optional]: specifies cpu for all worker nodes. Overrides inferred values from workflow.
 * `mem` [optional]: specifies mem for all worker nodes. Overrides inferred values from workflow.
 * `submit-extra` [optional]: specifies arguments, as a string, to append to the `float` command.

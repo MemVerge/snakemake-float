@@ -49,7 +49,7 @@ class FloatStatus:
         try:
             output = subprocess.check_output(cmd)
             output = json.loads(output.decode())
-            float_status = output["status"]
+            float_status = output['status']
         except subprocess.CalledProcessError:
             msg = f"Failed to get show response for job: {jobid}"
             logger.exception(msg)

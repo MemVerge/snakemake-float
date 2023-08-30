@@ -122,6 +122,7 @@ The following workflows have been tested and known to be working at some time fo
     - With workarounds: `curl` in rule `get_vep_cache` can break due to instance migration. Either disable instance migration or make offending rules local.
 * [StainedGlass](https://github.com/mrvollger/StainedGlass)
 
-## Problems
+## Problems and Limitations
 
 MMCloud jobs that execute rules requiring network usage may fail or hang if migration is enabled.
+In the case of workflows with large fan-out, job submission may take a long time due to a lack of concurrency.

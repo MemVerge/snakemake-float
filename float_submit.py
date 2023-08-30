@@ -2,6 +2,7 @@
 
 import json
 import re
+import shlex
 import sys
 import subprocess
 
@@ -16,39 +17,41 @@ class FloatSubmit:
     _AWS_MEM_UPPER_BOUND = 1024
 
     def __init__(self):
+        self._cmd = ['float', 'submit', '--force', '--format', 'json']
+
         self._config = FloatConfig()
+        config_parameters = self._config.parameters()
+
+        self._cmd.extend(['-a', config_parameters['address']])
+        self._cmd.extend(['-u', config_parameters['username']])
+        self._cmd.extend(['-p', config_parameters['password']])
 
     def submit_job(self, job_file):
+        cmd = self._cmd
         cfg = self._config
         config_parameters = cfg.parameters()
 
-        cmd = 'float submit --force --format json'
-
-        cmd += f" -a {config_parameters['address']}"
-        cmd += f" -u {config_parameters['username']}"
-        cmd += f" -p {config_parameters['password']}"
-
-        cmd += f" --image {config_parameters['base-image']}"
+        cmd.extend(['--image', config_parameters['base-image']])
 
         for data_volume in config_parameters['data-volumes']:
-            cmd += f" --dataVolume {data_volume}"
+            cmd.extend(['--dataVolume', data_volume])
 
         job_properties = read_job_properties(jobscript)
         if 'cpu' in config_parameters:
-            cmd += f" --cpu {config_parameters['cpu']}"
+            cmd.extend(['--cpu', config_parameters['cpu']])
         else:
             cpu = max(job_properties.get('threads'), 2)
-            cmd += f" --cpu {cpu}:{self._AWS_CPU_UPPER_BOUND}"
+            cmd.extend(['--cpu', f"{cpu}:{self._AWS_CPU_UPPER_BOUND}"])
 
         if 'mem' in config_parameters:
-            cmd += f" --mem {config_parameters['mem']}"
+            cmd.extend(['--mem', config_parameters['mem']])
         else:
             mem_MiB = max(
                 job_properties.get('resources', {}).get('mem_mib'),
                 4096
             )
             mem_GiB = (mem_MiB + 1023) // 1024
-            cmd += f" --mem {mem_GiB}:{self._AWS_MEM_UPPER_BOUND}"
+            cmd.extend(['--mem', f"{mem_GiB}:{self._AWS_MEM_UPPER_BOUND}"])
 
         try:
             with open(job_file, 'r') as jf:
@@ -65,32 +68,27 @@ class FloatSubmit:
 
         job_prefix = config_parameters.get('job-prefix', 'snakemake')
         job_name = f"{job_prefix}-job_{snakejob}-attempt_{attempt}"
-        cmd += f" --name {job_name}"
+        cmd.extend(["--name", job_name])
 
-        cmd += f" --job {job_file}"
-        cmd += f" {config_parameters.get('submit-extra', '')}"
+        cmd.extend(["--job", job_file])
+        cmd.extend(shlex.split(config_parameters.get('submit-extra', '')))
 
         logger.info(f"Attempt {attempt} to submit Snakemake job {snakejob}")
-        try:
-            output = subprocess.check_output(cmd, shell=True).decode()
-        except subprocess.CalledProcessError:
-            logger.exception('Failed to submit job')
-            raise
 
         try:
-            output = subprocess.check_output(cmd, shell=True)
+            output = subprocess.check_output(cmd)
             output = json.loads(output.decode())
-            jobid = output["id"]
+            jobid = output['id']
         except subprocess.CalledProcessError:
-            msg = "Failed to submit job"
+            msg = 'Failed to submit job'
             logger.exception(msg)
             raise
         except (UnicodeError, json.JSONDecodeError):
-            msg = "Failed to decode submit response"
+            msg = 'Failed to decode submit response'
             logger.exception(msg)
             raise
         except KeyError:
-            msg = "Failed to obtain float job id"
+            msg = 'Failed to obtain float job id'
             logger.exception(msg)
             raise
 

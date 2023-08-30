@@ -35,7 +35,7 @@ Add the following:
 `/etc/exports`
 
 ```
-SHARED_DIR SUBNET(rw,sync,all_squash,anonuid=UID,anongid=GID)
+<SHARED_DIR> <SUBNET>(rw,sync,all_squash,anonuid=<UID>,anongid=<GID>)
 ```
 
 Where:
@@ -49,9 +49,9 @@ Add to the shared working directory the mininum:
 
 `snakemake-float.yaml`
 ```yaml
-work-dir: "MOUNT_POINT"
+work-dir: "<MOUNT_POINT>"
 data-volumes:
-- "nfs://NFS_SERVER_ADDRESS/SHARED_DIR:MOUNT_POINT"
+- "nfs://<NFS_SERVER_ADDRESS>/<SHARED_DIR>:<MOUNT_POINT>"
 ```
 
 Where:
@@ -61,7 +61,7 @@ Where:
 
 To execute a workflow, run:
 
-`snakemake --profile snakemake-float --jobs VALUE`
+`snakemake --profile snakemake-float --jobs <VALUE>`
 
 `VALUE` can take the value `unlimited`.
 
@@ -71,7 +71,7 @@ Install [s3fs](https://github.com/s3fs-fuse/s3fs-fuse#installation).
 
 To mount a bucket as a directory, run:
 
-`s3fs BUCKET_NAME SHARED_DIR -o umask=0000 -o disable_noobj_cache`
+`s3fs <BUCKET_NAME> <SHARED_DIR> -o umask=0000 -o disable_noobj_cache`
 
 Where:
 * `BUCKET_NAME` is the S3 bucket name.
@@ -83,9 +83,9 @@ Add to the shared working directory the mininum:
 
 `snakemake-float.yaml`
 ```yaml
-work-dir: "MOUNT_POINT"
+work-dir: "<MOUNT_POINT>"
 data-volumes:
-- "[mode=rw]s3://BUCKET_NAME:MOUNT_POINT"
+- "[mode=rw]s3://<BUCKET_NAME>:<MOUNT_POINT>"
 ```
 
 Where:
@@ -94,7 +94,7 @@ Where:
 
 To execute a workflow, run:
 
-`snakemake --profile snakemake-float --jobs VALUE`
+`snakemake --profile snakemake-float --jobs <VALUE>`
 
 `VALUE` can take the value `unlimited`.
 
@@ -111,8 +111,6 @@ Containers as specified by the `singularity` directive are not supported.
 `cluster-sidecar` is specified in `config.yaml` to set the environment variable `SNAKEMAKE_CLUSTER_SIDECAR_VARS` as the time, which is used in determining the log file name for the user invocation of `snakemake`. Log files are stored in `.snakemake/log/` in the working directory.
 
 Set log level by setting environment variable `SNAKEMAKE_FLOAT_LOG_LEVEL` as one of `CRITICAL`, `ERROR`, `WARNING`, `INFO`, or `DEBUG`. The default log level is `INFO`.
-
-There is currently a minor bug where termination of the sidecar via CTRL-C does not behave as it should. Optionally disable the cluster sidecar by removing it from `cluster.yaml`, which will cause the log file to be named `snakemake.float.log` instead.
 
 ## Workflows Tested
 

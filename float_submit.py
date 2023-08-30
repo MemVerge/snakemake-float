@@ -68,9 +68,9 @@ class FloatSubmit:
 
         job_prefix = config_parameters.get('job-prefix', 'snakemake')
         job_name = f"{job_prefix}-job_{snakejob}-attempt_{attempt}"
-        cmd.extend(["--name", job_name])
+        cmd.extend(['--name', job_name])
 
-        cmd.extend(["--job", job_file])
+        cmd.extend(['--job', job_file])
         cmd.extend(shlex.split(config_parameters.get('submit-extra', '')))
 
         logger.info(f"Attempt {attempt} to submit Snakemake job {snakejob}")

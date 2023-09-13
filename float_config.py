@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-import os
-
 import yaml
 
 from snakemake.common import get_container_image
@@ -21,20 +19,7 @@ class FloatConfig:
     })
 
     def __init__(self, config_file=_CONFIG_FILE):
-        try:
-            address = os.environ['MMC_ADDRESS']
-            username = os.environ['MMC_USERNAME']
-            password = os.environ['MMC_PASSWORD']
-        except KeyError:
-            logger.exception('Missing required environment variable')
-            raise
-
-        self._parameters = {
-            'address': address,
-            'username': username,
-            'password': password,
-            'base-image': get_container_image()
-        }
+        self._parameters = {'base-image': get_container_image()}
 
         try:
             with open(config_file) as cf:

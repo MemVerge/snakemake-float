@@ -5,7 +5,7 @@ import sys
 import time
 import subprocess
 
-from float_config import FloatConfig
+from float_login import FloatLogin
 from float_utils import logger
 
 
@@ -35,18 +35,12 @@ class FloatStatus:
     def __init__(self):
         self._cmd = ['float', 'show', '--format', 'json']
 
-        self._config = FloatConfig()
-        config_parameters = self._config.parameters()
-
-        self._cmd.extend(['-a', config_parameters['address']])
-        self._cmd.extend(['-u', config_parameters['username']])
-        self._cmd.extend(['-p', config_parameters['password']])
-
     def job_status(self, jobid):
         cmd = self._cmd
         cmd.extend(['--job', jobid])
 
         try:
+            FloatLogin().login()
             output = subprocess.check_output(cmd)
             output = json.loads(output.decode())
             float_status = output['status']

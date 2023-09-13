@@ -9,6 +9,7 @@ import subprocess
 from snakemake.utils import read_job_properties
 
 from float_config import FloatConfig
+from float_login import FloatLogin
 from float_utils import logger
 
 
@@ -20,11 +21,6 @@ class FloatSubmit:
         self._cmd = ['float', 'submit', '--force', '--format', 'json']
 
         self._config = FloatConfig()
-        config_parameters = self._config.parameters()
-
-        self._cmd.extend(['-a', config_parameters['address']])
-        self._cmd.extend(['-u', config_parameters['username']])
-        self._cmd.extend(['-p', config_parameters['password']])
 
     def submit_job(self, job_file):
         cmd = self._cmd
@@ -76,6 +72,7 @@ class FloatSubmit:
         logger.info(f"Attempt {attempt} to submit Snakemake job {snakejob}")
 
         try:
+            FloatLogin().login()
             output = subprocess.check_output(cmd)
             output = json.loads(output.decode())
             jobid = output['id']

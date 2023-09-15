@@ -2,14 +2,16 @@
 
 import asyncio
 import json
-import os
 import sys
+from typing import Union
 
-from float_common import Command, logger
+from float_common import Command
+from float_logger import logger
+from sidecar_vars import SIDECAR_PORT
 
 
-async def sidecar_cancel(port: str, job_id: str):
-    reader, writer = await asyncio.open_connection("localhost", port)
+async def sidecar_cancel(port: Union[int, str], job_id: str):
+    reader, writer = await asyncio.open_connection("localhost", SIDECAR_PORT)
     request = {
         "command": Command.CANCEL,
         "job_id": job_id,
@@ -22,18 +24,6 @@ async def sidecar_cancel(port: str, job_id: str):
     await writer.wait_closed()
 
 
-async def cancel_jobs(job_ids: list[str]):
-    try:
-        sidecar_vars = json.loads(os.environ["SNAKEMAKE_CLUSTER_SIDECAR_VARS"])
-        port = sidecar_vars["port"]
-    except KeyError:
-        logger.exception("Missing sidecar vars")
-    except json.JSONDecodeError:
-        logger.exception("Failed to decode sidecar vars")
-
-    await asyncio.gather(*[sidecar_cancel(port, job_id) for job_id in job_ids])
-
-
 if __name__ == "__main__":
     job_ids = sys.argv[1:]
-    asyncio.run(cancel_jobs(job_ids))
+    asyncio.run(asyncio.wait([sidecar_cancel(job_id) for job_id in job_ids]))

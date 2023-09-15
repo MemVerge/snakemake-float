@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
+
 import asyncio
 import datetime
 import json
 import os
 import subprocess
 
-from float_common import Command, async_check_output, logger
+from float_common import Command, async_check_output, float_to_snakemake_status
+from float_logger import logger
 
 
 class FloatService:
@@ -27,7 +29,7 @@ class FloatService:
         }
 
         print(json.dumps(sidecar_vars), flush=True)
-        # await server.serve_forever()
+        await server.serve_forever()
 
     async def handle_request(
         self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
@@ -44,7 +46,7 @@ class FloatService:
                 job_status = await self.status(request["job_id"])
                 response = {"job_status": job_status}
             elif command == Command.CANCEL:
-                await self.cancel(request["job_ids"])
+                await self.cancel(request["job_id"])
                 response = None
             else:
                 logger.exception(f"Invalid command in request: {command}")
@@ -95,22 +97,76 @@ class FloatService:
 
     async def submit(self, job_script: str) -> str:
         """
-        Submit the job to the OpCenter.
+        Submit the job to the OpCenter and return job id.
         """
-        pass
+        submit_command = [
+            "float",
+            "submit",
+            "--force",
+            *self._response_format,
+        ]
+        return "FILLER_JOB_ID"
 
     async def status(self, job_id: str) -> str:
         """
         Return the job status from the OpCenter.
         """
-        pass
+        show_command = [
+            "float",
+            "show",
+            *self._response_format,
+            "--job",
+            job_id,
+        ]
 
-    async def cancel(self, job_ids: str):
-        """
-        Cancel the jobs.
-        """
-        pass
+        logger.info(f"Attempting to obtain status for MMCloud job {job_id}")
+        logger.debug(f"With command: {show_command}")
+        try:
+            await self.async_login()
+            show_response = await async_check_output(*show_command)
+            show_response = json.loads(show_response.decode())
+            job_status = show_response["status"]
+        except subprocess.CalledProcessError as e:
+            logger.exception(
+                f"Failed to get show response for MMCloud job: {job_id}\n"
+                f"[stdout] {e.stdout.decode()}\n"
+                f"[stderr] {e.stderr.decode()}\n"
+            )
+            raise
+        except (UnicodeError, json.JSONDecodeError):
+            logger.exception(f"Failed to decode show response for MMCloud job: {job_id}")
+            raise
+        except KeyError:
+            logger.exception(f"Failed to obtain status for MMCloud job: {job_id}")
+            raise
 
+        job_status = float_to_snakemake_status(job_status)
+        return job_status
+
+    async def cancel(self, job_id: str):
+        """
+        Cancel the job.
+        """
+        cancel_command = [
+            "float",
+            "cancel",
+            "--force",
+            "--job",
+            job_id,
+        ]
+
+        logger.info(f"Attempting to cancel MMCloud job {job_id}")
+        logger.debug(f"With command: {cancel_command}")
+        try:
+            await self.async_login()
+            await async_check_output(*cancel_command)
+        except subprocess.CalledProcessError as e:
+            logger.exception(
+                f"Failed to cancel MMCloud job: {job_id}\n[stdout] {e.stdout.decode()}\n[stderr] {e.stderr.decode()}\n"
+            )
+            raise
+
+        logger.info(f"Submitted cancel request for MMCloud job: {job_id}")
 
 if __name__ == "__main__":
     asyncio.run(FloatService().serve())

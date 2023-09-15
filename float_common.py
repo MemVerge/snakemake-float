@@ -1,26 +1,44 @@
 #!/usr/bin/env python3
 
 import asyncio
-import logging
-import os
 import shlex
 import subprocess
 from asyncio.subprocess import PIPE
 from enum import Enum
-
 
 class Command(Enum):
     SUBMIT = 1
     STATUS = 2
     CANCEL = 3
 
+FLOAT_TO_SNAKEMAKE_STATUS = {
+    "Submitted": "running",
+    "Initializing": "running",
+    "Starting": "running",
+    "Executing": "running",
+    "Capturing": "running",
+    "Floating": "running",
+    "Suspended": "running",
+    "Suspending": "running",
+    "Resuming": "running",
+    "Completed": "success",
+    "Cancelled": "failed",
+    "Cancelling": "failed",
+    "FailToComplete": "failed",
+    "FailToExecute": "failed",
+    "CheckpointFailed": "failed",
+    "Timedout": "failed",
+    "NoAvailableHost": "failed",
+    "Unknown": "failed",
+    "WaitingForLicense": "failed",
+}
 
-LOG_LEVEL = os.environ.get("SNAKEMAKE_FLOAT_LOG_LEVEL", "INFO").upper()
-logging.basicConfig(
-    level=LOG_LEVEL,
-    format="[%(asctime)s] [FLOAT] %(levelname)s: %(message)s",
-)
-logger = logging.getLogger(__name__)
+
+def float_to_snakemake_status(job_status: str) -> str:
+    """
+    Map float status to Snakemake status.
+    """
+    return FLOAT_TO_SNAKEMAKE_STATUS[job_status]
 
 
 async def async_check_output(*args, **kwargs):

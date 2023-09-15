@@ -1,30 +1,39 @@
 #!/usr/bin/env python3
 
+import asyncio
+import json
+import os
 import sys
-import subprocess
 
-from float_login import FloatLogin
-from float_utils import logger
+from float_common import Command, logger
 
 
-class FloatCancel:
-    def __init__(self):
-        self._cmd = ['float', 'cancel', '--force']
+async def sidecar_cancel(port: str, job_id: str):
+    reader, writer = await asyncio.open_connection("localhost", port)
+    request = {
+        "command": Command.CANCEL,
+        "job_id": job_id,
+    }
+    request_bytes = json.dumps(request).encode()
+    writer.write(request_bytes)
+    await writer.drain()
 
-    def cancel_job(self, jobid):
-        cmd = self._cmd
-        cmd.extend(['--job', jobid])
-
-        FloatLogin().login()
-        subprocess.Popen(cmd)
-
-        logger.info(f"Submitted float cancel for job: {jobid}")
-        logger.debug(f"With command: {cmd}")
+    writer.close()
+    await writer.wait_closed()
 
 
-if __name__ == '__main__':
-    jobids = sys.argv[1:]
+async def cancel_jobs(job_ids: list[str]):
+    try:
+        sidecar_vars = json.loads(os.environ["SNAKEMAKE_CLUSTER_SIDECAR_VARS"])
+        port = sidecar_vars["port"]
+    except KeyError:
+        logger.exception("Missing sidecar vars")
+    except json.JSONDecodeError:
+        logger.exception("Failed to decode sidecar vars")
 
-    float_cancel = FloatCancel()
-    for jobid in jobids:
-        float_cancel.cancel_job(jobid)
+    await asyncio.gather(*[sidecar_cancel(port, job_id) for job_id in job_ids])
+
+
+if __name__ == "__main__":
+    job_ids = sys.argv[1:]
+    asyncio.run(cancel_jobs(job_ids))

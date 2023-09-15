@@ -3,6 +3,5 @@ base-image: ""
 work-dir: ""
 data-volumes:
 - ""
-cpu: ""
-mem: ""
-submit-extra: ""
+default-cpu: ""
+default-mem: ""

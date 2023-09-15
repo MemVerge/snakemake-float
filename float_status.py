@@ -1,96 +1,55 @@
 #!/usr/bin/env python3
 
+import asyncio
 import json
+import os
 import sys
-import time
-import subprocess
 
-from float_login import FloatLogin
-from float_utils import logger
+from float_common import Command, logger
 
 
-class FloatStatus:
-    _STATUS_MAP = {
-        'Submitted': 'running',
-        'Initializing': 'running',
-        'Starting': 'running',
-        'Executing': 'running',
-        'Capturing': 'running',
-        'Floating': 'running',
-        'Suspended': 'running',
-        'Suspending': 'running',
-        'Resuming': 'running',
-        'Completed': 'success',
-        'Cancelled': 'failed',
-        'Cancelling': 'failed',
-        'FailToComplete': 'failed',
-        'FailToExecute': 'failed',
-        'CheckpointFailed': 'failed',
-        'Timedout': 'failed',
-        'NoAvailableHost': 'failed',
-        'Unknown': 'failed',
-        'WaitingForLicense': 'failed'
+async def sidecar_status(port: str, job_id: str) -> str:
+    reader, writer = await asyncio.open_connection("localhost", port)
+    request = {
+        "command": Command.STATUS,
+        "job_id": job_id,
     }
+    request_bytes = json.dumps(request).encode()
+    writer.write(request_bytes)
+    await writer.drain()
 
-    def __init__(self):
-        self._cmd = ['float', 'show', '--format', 'json']
+    writer.close()
+    await writer.wait_closed()
 
-    def job_status(self, jobid):
-        cmd = self._cmd
-        cmd.extend(['--job', jobid])
+    response_bytes = await reader.read()
 
-        try:
-            FloatLogin().login()
-            output = subprocess.check_output(cmd)
-            output = json.loads(output.decode())
-            float_status = output['status']
-        except subprocess.CalledProcessError:
-            msg = f"Failed to get show response for job: {jobid}"
-            logger.exception(msg)
-            raise
-        except (UnicodeError, json.JSONDecodeError):
-            msg = f"Failed to decode show response for job: {jobid}"
-            logger.exception(msg)
-            raise
-        except KeyError:
-            msg = f"Failed to obtain status for job: {jobid}"
-            logger.exception(msg)
-            raise
+    try:
+        response = json.loads(response_bytes.decode())
+        job_status = response["job_status"]
+    except json.JSONDecodeError:
+        logger.exception(f"Failed to decode response: {response}")
+        raise
+    except KeyError:
+        logger.exception(f"Missing status in response: {response}")
+        raise
 
-        status = self._STATUS_MAP[float_status]
-
-        # There are too many status checks to log for normal use
-        logger.debug(f"Submitted float show for job: {jobid}")
-        logger.debug(f"With command: {cmd}")
-        logger.debug(f"Obtained float status: {float_status}")
-        logger.debug(f"OpCenter response:\n{output}")
-
-        return status
+    return job_status
 
 
-if __name__ == '__main__':
-    jobid = sys.argv[1]
+async def get_job_status(job_id: str):
+    try:
+        sidecar_vars = json.loads(os.environ["SNAKEMAKE_CLUSTER_SIDECAR_VARS"])
+        port = sidecar_vars["port"]
+    except KeyError:
+        logger.exception("Missing sidecar vars")
+    except json.JSONDecodeError:
+        logger.exception("Failed to decode sidecar vars")
 
-    float_status = FloatStatus()
-    status = None
+    job_status = await sidecar_status(port, job_id)
+    return job_status
 
-    retry_int = 5
-    num_retries = 4  # num_attempts - 1
-    for attempt in range(num_retries + 1):
-        try:
-            status = float_status.job_status(jobid)
-        except subprocess.CalledProcessError:
-            if attempt < num_retries:
-                logger.info(
-                    f"Retrying status check for job {jobid}"
-                    f" in {retry_int} seconds"
-                )
-                time.sleep(retry_int)
-            continue
-        break
 
-    if status is None:
-        logger.info(f"Failed to obtain status: marking job {jobid} as failed")
-        status = 'failed'
-
-    print(status)
+if __name__ == "__main__":
+    job_id = sys.argv[1]
+    job_status = asyncio.run(get_job_status(job_id))
+    print(job_status)

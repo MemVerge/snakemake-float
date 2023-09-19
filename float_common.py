@@ -4,12 +4,12 @@ import asyncio
 import shlex
 import subprocess
 from asyncio.subprocess import PIPE
-from enum import Enum
+from enum import StrEnum
 
-class Command(Enum):
-    SUBMIT = 1
-    STATUS = 2
-    CANCEL = 3
+class Command(StrEnum):
+    SUBMIT = "SUBMIT"
+    STATUS = "STATUS"
+    CANCEL = "CANCEL"
 
 FLOAT_TO_SNAKEMAKE_STATUS = {
     "Submitted": "running",

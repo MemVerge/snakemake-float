@@ -6,6 +6,8 @@ import json
 import os
 import subprocess
 
+from snakemake.utils import read_job_properties
+
 from float_common import Command, async_check_output, float_to_snakemake_status
 from float_logger import logger
 
@@ -34,7 +36,10 @@ class FloatService:
     async def handle_request(
         self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
     ):
-        request_bytes = await reader.read()
+        """
+        Handle submit, status, and cancel requests.
+        """
+        request_bytes = await reader.readline()
         try:
             request = json.loads(request_bytes.decode())
             command = request["command"]
@@ -60,7 +65,7 @@ class FloatService:
             raise
 
         if response is not None:
-            response_bytes = json.dumps(response).encode()
+            response_bytes = (json.dumps(response) + "\n").encode()
             writer.write(response_bytes)
             await writer.drain()
 
@@ -105,6 +110,17 @@ class FloatService:
             "--force",
             *self._response_format,
         ]
+
+        job_properties = read_job_properties(job_script)
+
+        #min_cpu, min_mem, max_cpu, max_mem = self._get_compute_resources(job_properties)
+        #submit_command.extend(["--cpu", f"{min_cpu}:{max_cpu}"] if max_cpu else ["--cpu", f"{min_cpu}"])
+        #submit_command.extend(["--mem", f"{min_mem}:{max_mem}"] if max_mem else ["--mem", f"{min_mem}"])
+
+        resources = job_properties.get('resources', {})
+
+        # TODO: Implement
+
         return "FILLER_JOB_ID"
 
     async def status(self, job_id: str) -> str:
@@ -122,7 +138,7 @@ class FloatService:
         logger.info(f"Attempting to obtain status for MMCloud job {job_id}")
         logger.debug(f"With command: {show_command}")
         try:
-            await self.async_login()
+            await self.login()
             show_response = await async_check_output(*show_command)
             show_response = json.loads(show_response.decode())
             job_status = show_response["status"]
@@ -158,7 +174,7 @@ class FloatService:
         logger.info(f"Attempting to cancel MMCloud job {job_id}")
         logger.debug(f"With command: {cancel_command}")
         try:
-            await self.async_login()
+            await self.login()
             await async_check_output(*cancel_command)
         except subprocess.CalledProcessError as e:
             logger.exception(

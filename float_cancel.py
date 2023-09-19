@@ -10,13 +10,18 @@ from float_logger import logger
 from sidecar_vars import SIDECAR_PORT
 
 
-async def sidecar_cancel(port: Union[int, str], job_id: str):
+async def sidecar_cancel(job_id: str):
+    """
+    Open a connection with sidecar and cancel job.
+    """
     reader, writer = await asyncio.open_connection("localhost", SIDECAR_PORT)
+
     request = {
         "command": Command.CANCEL,
         "job_id": job_id,
     }
-    request_bytes = json.dumps(request).encode()
+
+    request_bytes = (json.dumps(request) + "\n").encode()
     writer.write(request_bytes)
     await writer.drain()
 

@@ -10,21 +10,23 @@ from float_logger import logger
 from sidecar_vars import SIDECAR_PORT
 
 
-async def sidecar_status(port: Union[int, str], job_id: str) -> str:
+async def sidecar_status(job_id: str) -> str:
+    """
+    Open a connection with sidecar and get job status.
+    """
     reader, writer = await asyncio.open_connection("localhost", SIDECAR_PORT)
+
     request = {
         "command": Command.STATUS,
         "job_id": job_id,
     }
-    request_bytes = json.dumps(request).encode()
+
+    request_bytes = (json.dumps(request) + "\n").encode()
     writer.write(request_bytes)
     await writer.drain()
 
-    writer.close()
-    await writer.wait_closed()
-
-    response_bytes = await reader.read()
-
+    # Get job status from sidecar
+    response_bytes = await reader.readline()
     try:
         response = json.loads(response_bytes.decode())
         job_status = response["job_status"]
@@ -35,6 +37,8 @@ async def sidecar_status(port: Union[int, str], job_id: str) -> str:
         logger.exception(f"Missing status in response: {response}")
         raise
 
+    writer.close()
+    await writer.wait_closed()
     return job_status
 
 

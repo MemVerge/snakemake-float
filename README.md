@@ -109,21 +109,13 @@ Tell `snakemake` to `--use-conda` for workflows requiring packages installable b
 
 Additionally, when using Conda with S3FS, provide `snakemake` with a `--conda-prefix` that is not within the S3FS shared working directory. Otherwise, package installation can stall workflow execution.
 
-Containers as specified by the `singularity` directive are not supported.
+Containers as specified by the `container` directive are not supported.
 
 ## Logging
 
-`cluster-sidecar` is specified in `config.yaml` to set the environment variable `SNAKEMAKE_CLUSTER_SIDECAR_VARS` as the time, which is used in determining the log file name for the user invocation of `snakemake`. Log files are stored in `.snakemake/log/` in the working directory.
+Log file is stored with relative path `.snakemake/log/snakemake-float.log` to the working directory.
 
 Set log level by setting environment variable `SNAKEMAKE_FLOAT_LOG_LEVEL` as one of `CRITICAL`, `ERROR`, `WARNING`, `INFO`, or `DEBUG`. The default log level is `INFO`.
-
-## Workflows Tested
-
-The following workflows have been tested and known to be working at some time for some sets of rules and data:
-* [rna-seq-star-deseq2](https://github.com/snakemake-workflows/rna-seq-star-deseq2)
-* [dna-seq-varlociraptor](https://github.com/snakemake-workflows/dna-seq-gatk-variant-calling)
-    - With workarounds: `curl` in rule `get_vep_cache` can break due to instance migration. Either disable instance migration or make offending rules local.
-* [StainedGlass](https://github.com/mrvollger/StainedGlass)
 
 ## Problems and Limitations
 

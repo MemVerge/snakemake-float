@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 
 import asyncio
+import os
 import shlex
 import subprocess
 from asyncio.subprocess import PIPE
 from enum import StrEnum
+
+from float_logger import logger
 
 
 class Command(StrEnum):
@@ -57,3 +60,32 @@ async def async_check_output(*args, **kwargs):
             returncode, shlex.join(args), output=stdout, stderr=stderr
         )
     return stdout
+
+
+async def login():
+    """
+    Log in to Memory Machine Cloud OpCenter.
+    """
+    try:
+        # If already logged in, this will reset the session timer
+        login_info_command = ["float", "login", "--info"]
+        await async_check_output(*login_info_command)
+    except subprocess.CalledProcessError:
+        logger.info("Attempting to log in to OpCenter")
+        try:
+            login_command = [
+                "float",
+                "login",
+                "--address",
+                os.environ.get("MMC_ADDRESS"),
+                "--username",
+                os.environ.get("MMC_USERNAME"),
+                "--password",
+                os.environ.get("MMC_PASSWORD"),
+            ]
+            await async_check_output(*login_command)
+        except subprocess.CalledProcessError:
+            logger.exception("Failed to log in to OpCenter")
+            raise
+
+        logger.info("Logged in to OpCenter")

@@ -3,18 +3,16 @@
 import asyncio
 import datetime
 import json
-import os
 import re
 import shlex
 import subprocess
-from dataclasses import dataclass
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Tuple
 
 import yaml
 from snakemake.common import get_container_image
 from snakemake.utils import read_job_properties
 
-from float_common import Command, async_check_output, float_to_snakemake_status
+from float_common import Command, async_check_output, float_to_snakemake_status, login
 from float_logger import logger
 
 
@@ -94,34 +92,6 @@ class FloatService:
 
         writer.close()
         await writer.wait_closed()
-
-    async def login(self):
-        """
-        Log in to Memory Machine Cloud OpCenter.
-        """
-        try:
-            # If already logged in, this will reset the session timer
-            login_info_command = ["float", "login", "--info"]
-            await async_check_output(*login_info_command)
-        except subprocess.CalledProcessError:
-            logger.info("Attempting to log in to OpCenter")
-            try:
-                login_command = [
-                    "float",
-                    "login",
-                    "--address",
-                    os.environ.get("MMC_ADDRESS"),
-                    "--username",
-                    os.environ.get("MMC_USERNAME"),
-                    "--password",
-                    os.environ.get("MMC_PASSWORD"),
-                ]
-                await async_check_output(*login_command)
-            except subprocess.CalledProcessError:
-                logger.exception("Failed to log in to OpCenter")
-                raise
-
-            logger.info("Logged in to OpCenter")
 
     async def submit(self, job_script: str) -> str:
         """
@@ -205,7 +175,7 @@ class FloatService:
         )
         logger.debug(f"With command: {submit_command}")
         try:
-            await self.login()
+            await login()
             submit_response = await async_check_output(*submit_command)
             submit_response = json.loads(submit_response.decode())
             job_id = submit_response["id"]
@@ -249,7 +219,7 @@ class FloatService:
         logger.info(f"Attempting to obtain status for MMCloud job {job_id}")
         logger.debug(f"With command: {show_command}")
         try:
-            await self.login()
+            await login()
             show_response = await async_check_output(*show_command)
             show_response = json.loads(show_response.decode())
             job_status = show_response["status"]
@@ -287,7 +257,7 @@ class FloatService:
         logger.info(f"Attempting to cancel MMCloud job {job_id}")
         logger.debug(f"With command: {cancel_command}")
         try:
-            await self.login()
+            await login()
             await async_check_output(*cancel_command)
         except subprocess.CalledProcessError as e:
             logger.exception(

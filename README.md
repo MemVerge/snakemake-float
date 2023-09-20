@@ -1,1 +1,1 @@
-# snakemake-float
+# snakemake-executor-plugin-mmcloud

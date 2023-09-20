@@ -1,7 +1,3 @@
-job-prefix: ""
-base-image: ""
 work-dir: ""
 data-volumes:
 - ""
-default-cpu: ""
-default-mem: ""

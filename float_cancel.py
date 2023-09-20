@@ -3,10 +3,9 @@
 import asyncio
 import json
 import sys
-from typing import Union
+from typing import List
 
 from float_common import Command
-from float_logger import logger
 from sidecar_vars import SIDECAR_PORT
 
 
@@ -29,6 +28,10 @@ async def sidecar_cancel(job_id: str):
     await writer.wait_closed()
 
 
+async def cancel_jobs(job_ids: List[str]):
+    await asyncio.gather(*[sidecar_cancel(job_id) for job_id in job_ids])
+
+
 if __name__ == "__main__":
     job_ids = sys.argv[1:]
-    asyncio.run(asyncio.wait([sidecar_cancel(job_id) for job_id in job_ids]))
+    asyncio.run(cancel_jobs(job_ids))

@@ -3,7 +3,6 @@
 import asyncio
 import json
 import sys
-from typing import Union
 
 from float_common import Command
 from float_logger import logger

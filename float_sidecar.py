@@ -5,7 +5,9 @@ import datetime
 import json
 import os
 import subprocess
+from typing import Any, Dict, Tuple
 
+from snakemake.common import get_container_image
 from snakemake.utils import read_job_properties
 
 from float_common import Command, async_check_output, float_to_snakemake_status
@@ -15,6 +17,35 @@ from float_logger import logger
 class FloatService:
     def __init__(self):
         self._response_format = ["--format", "json"]
+
+    def _get_compute_resources(job_properties: Dict[str, Any]) -> Tuple[int, int, int, int]:
+        resources = job_properties.get("resources", {})
+
+        float_cpu = resources.get("float_cpu")
+        float_mem = resources.get("float_mem")
+
+        if isinstance(float_cpu, int):
+            min_cpu = float_cpu
+            max_cpu = None
+        elif isinstance(float_cpu, str):
+            min_cpu, max_cpu = [int(cpu_resource) for cpu_resource in float_cpu.split(":")]
+        else:
+            threads = job_properties.get("threads", 1)
+            min_cpu = threads
+            max_cpu = threads
+
+        if isinstance(float_mem, int):
+            min_mem = float_mem
+            max_mem = None
+        elif isinstance(float_mem, str):
+            min_mem, max_mem = [int(mem_resource) for mem_resource in float_mem.split(":")]
+        else:
+            mem_mib = resources.get("mem_mib", 1024)
+            mem_gib = (mem_mib + 1023) // 1024
+            min_mem = mem_gib
+            max_mem = mem_gib
+
+        return min_cpu, min_mem, max_cpu, max_mem
 
     async def serve(self):
         """
@@ -113,11 +144,14 @@ class FloatService:
 
         job_properties = read_job_properties(job_script)
 
-        #min_cpu, min_mem, max_cpu, max_mem = self._get_compute_resources(job_properties)
-        #submit_command.extend(["--cpu", f"{min_cpu}:{max_cpu}"] if max_cpu else ["--cpu", f"{min_cpu}"])
-        #submit_command.extend(["--mem", f"{min_mem}:{max_mem}"] if max_mem else ["--mem", f"{min_mem}"])
+        min_cpu, min_mem, max_cpu, max_mem = self._get_compute_resources(job_properties)
+        submit_command.extend(["--cpu", f"{min_cpu}:{max_cpu}"] if max_cpu else ["--cpu", f"{min_cpu}"])
+        submit_command.extend(["--mem", f"{min_mem}:{max_mem}"] if max_mem else ["--mem", f"{min_mem}"])
 
-        resources = job_properties.get('resources', {})
+        resources = job_properties.get("resources", {})
+
+        container_image = resources.get("float_image", get_container_image())
+        submit_command.extend("--image", container_image)
 
         # TODO: Implement
 

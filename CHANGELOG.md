@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### `Fixed`
 
 1. Removed a `match` statement from `float_utils.py` to support Python 3.9
+2. Fixed an issue where job memory was not correctly assigned if the pipeline specified `mem_gb` instead of `mem_mib`
+3. Fixed an issue where job submission failed due to very low memory requirement compared to the number of required vCPUs
 
 ### `Deprecated`
 

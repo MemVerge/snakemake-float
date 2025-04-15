@@ -34,25 +34,37 @@ class FloatSubmit:
 
         job_properties = read_job_properties(jobscript)
         if 'cpu' in config_parameters:
-            cpu = float(config_parameters['cpu'])
-            max_cpu = math.ceil(self._config.max_cpu_factor() * cpu)
+            cpu = int(config_parameters['cpu'])
+            max_cpu = math.ceil(self._config.max_cpu_factor() * float(cpu))
             cmd.extend(['--cpu', f"{cpu}:{max_cpu}"])
         else:
-            cpu = max(job_properties.get('threads'), 2)
-            max_cpu = math.ceil(self._config.max_cpu_factor() * cpu)
+            cpu = int(max(job_properties.get('threads'), 2))
+            max_cpu = math.ceil(self._config.max_cpu_factor() * float(cpu))
             cmd.extend(['--cpu', f"{cpu}:{max_cpu}"])
 
         if 'mem' in config_parameters:
-            mem = float(config_parameters['mem'])
-            max_mem = math.ceil(self._config.max_mem_factor() * mem)
+            mem = config_parameters['mem']
+            max_mem = math.ceil(self._config.max_mem_factor() * float(mem))
             cmd.extend(['--mem', f"{mem}:{max_mem}"])
         else:
-            mem_MiB = max(
-                job_properties.get('resources', {}).get('mem_mib'),
+            job_resources = job_properties.get('resources', {})
+            
+            mem_MiB = int(max(
+                job_resources.get('mem_mib'),
                 4096
-            )
-            mem_GiB = (mem_MiB + 1023) // 1024
-            max_mem = math.ceil(self._config.max_mem_factor() * mem_GiB)
+            ))
+
+            # Check if mem_gb is specified and pick the greater of the two
+            mem_gb_spec = int(job_resources.get('mem_gb', 4))
+
+            mem_GiB = max((mem_MiB + 1023) // 1024, mem_gb_spec)
+
+            # Some pipelines use file size to determine memory which can create problems on
+            # AWS as no instance has memory less tha 2x the number of vCPUs
+            min_allowed_mem_gb = 2 * cpu
+            mem_GiB = max(mem_GiB, min_allowed_mem_gb)
+
+            max_mem = math.ceil(self._config.max_mem_factor() * float(mem_GiB))
             cmd.extend(['--mem', f"{mem_GiB}:{max_mem}"])
 
         try:

@@ -4,6 +4,7 @@ import json
 import re
 import shlex
 import sys
+import math
 import subprocess
 
 from snakemake.utils import read_job_properties
@@ -14,8 +15,6 @@ from float_utils import logger
 
 
 class FloatSubmit:
-    _AWS_CPU_UPPER_BOUND = 192
-    _AWS_MEM_UPPER_BOUND = 1024
 
     def __init__(self):
         self._cmd = ['float', 'submit', '--force', '--format', 'json']
@@ -29,25 +28,32 @@ class FloatSubmit:
 
         cmd.extend(['--image', config_parameters['base-image']])
 
-        for data_volume in config_parameters['data-volumes']:
-            cmd.extend(['--dataVolume', data_volume])
+        if 'data-volumes' in config_parameters:
+            for data_volume in config_parameters['data-volumes']:
+                cmd.extend(['--dataVolume', data_volume])
 
         job_properties = read_job_properties(jobscript)
         if 'cpu' in config_parameters:
-            cmd.extend(['--cpu', config_parameters['cpu']])
+            cpu = float(config_parameters['cpu'])
+            max_cpu = math.ceil(self._config.max_cpu_factor() * cpu)
+            cmd.extend(['--cpu', f"{cpu}:{max_cpu}"])
         else:
             cpu = max(job_properties.get('threads'), 2)
-            cmd.extend(['--cpu', f"{cpu}:{self._AWS_CPU_UPPER_BOUND}"])
+            max_cpu = math.ceil(self._config.max_cpu_factor() * cpu)
+            cmd.extend(['--cpu', f"{cpu}:{max_cpu}"])
 
         if 'mem' in config_parameters:
-            cmd.extend(['--mem', config_parameters['mem']])
+            mem = float(config_parameters['mem'])
+            max_mem = math.ceil(self._config.max_mem_factor() * mem)
+            cmd.extend(['--mem', f"{mem}:{max_mem}"])
         else:
             mem_MiB = max(
                 job_properties.get('resources', {}).get('mem_mib'),
                 4096
             )
             mem_GiB = (mem_MiB + 1023) // 1024
-            cmd.extend(['--mem', f"{mem_GiB}:{self._AWS_MEM_UPPER_BOUND}"])
+            max_mem = math.ceil(self._config.max_mem_factor() * mem_GiB)
+            cmd.extend(['--mem', f"{mem_GiB}:{max_mem}"])
 
         try:
             with open(job_file, 'r') as jf:
@@ -69,6 +75,11 @@ class FloatSubmit:
         cmd.extend(['--job', job_file])
         cmd.extend(shlex.split(config_parameters.get('submit-extra', '')))
 
+        rule_name = job_properties.get('rule')
+        cmd.extend(['--customTag', f"nextflow-io-run-name:{job_prefix}"])
+        cmd.extend(['--customTag', f"nextflow-io-project-name:{job_prefix}"])
+        cmd.extend(['--customTag', f"nextflow-io-process-name:{rule_name}"])
+        
         logger.info(f"Attempt {attempt} to submit Snakemake job {snakejob}")
 
         try:

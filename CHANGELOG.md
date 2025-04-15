@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 1. Removed a `match` statement from `float_utils.py` to support Python 3.9
 
+### `Deprecated`
+
+1. `data-volumes` is no longer a required parameter.
+
 ### `Dependencies`
 
 1. Snakemake==7

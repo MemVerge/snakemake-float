@@ -140,25 +140,6 @@ if __name__ == '__main__':
 
     script_lines.insert(3, f"cd {float_submit.work_dir()}\n")
 
-    # Hack to allow --use-conda
-    exec_job_cmd = script_lines[-1]
-    if '--use-conda' in exec_job_cmd:
-        logger.debug('Prefixing jobscript to allow --use-conda')
-        conda_prefix = '/memverge/.snakemake'
-        script_lines[3: 3] = [
-            f"mkdir -p {conda_prefix}/conda\n",
-            f"mkdir -p {conda_prefix}/conda-archive\n"
-        ]
-
-        # Replace conda-frontend and conda-prefix in jobscript
-        exec_job_cmd = re.sub(r" --conda-frontend '.+'", '', exec_job_cmd)
-        exec_job_cmd = re.sub(r" --conda-prefix '.+'", '', exec_job_cmd)
-
-        conda_part = list(exec_job_cmd.partition(' --use-conda'))
-        override = f" --conda-frontend 'mamba' --conda-prefix '{conda_prefix}'"
-        conda_part[1] += override
-        script_lines[-1] = ''.join(conda_part)
-
     try:
         with open(jobscript, 'w') as js:
             js.writelines(script_lines)

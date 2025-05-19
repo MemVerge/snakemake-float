@@ -3,7 +3,7 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.2.0dev - [15-April-2025]
+## 0.2.0dev - [20-May-2025]
 
 ### `Added`
 
@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 1. Removed a `match` statement from `float_utils.py` to support Python 3.9
 2. Fixed an issue where job memory was not correctly assigned if the pipeline specified `mem_gb` instead of `mem_mib`
 3. Fixed an issue where job submission failed due to very low memory requirement compared to the number of required vCPUs
+4. Fixed an issue where `--conda-prefix` was ignored and `/memverge/.snakemake` was force specified as the prefix
 
 ### `Deprecated`
 

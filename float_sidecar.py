@@ -2,5 +2,5 @@
 
 import datetime
 
-if __name__ == '__main__':
-    print(datetime.datetime.now().isoformat().replace(':', ''))
+if __name__ == "__main__":
+    print(datetime.datetime.now().isoformat().replace(":", ""))

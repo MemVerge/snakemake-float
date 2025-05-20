@@ -8,21 +8,25 @@ from float_utils import logger
 
 class FloatLogin:
     def __init__(self):
-        self._info_cmd = ['float', 'login', '--info']
+        self._info_cmd = ["float", "login", "--info"]
 
         try:
-            address = os.environ['MMC_ADDRESS']
-            username = os.environ['MMC_USERNAME']
-            password = os.environ['MMC_PASSWORD']
+            address = os.environ["MMC_ADDRESS"]
+            username = os.environ["MMC_USERNAME"]
+            password = os.environ["MMC_PASSWORD"]
         except KeyError:
-            logger.exception('Missing required OpCenter credential(s)')
+            logger.exception("Missing required OpCenter credential(s)")
             raise
 
         self._login_cmd = [
-            'float', 'login',
-            '--address', address,
-            '--username', username,
-            '--password', password
+            "float",
+            "login",
+            "--address",
+            address,
+            "--username",
+            username,
+            "--password",
+            password,
         ]
 
     def login(self):

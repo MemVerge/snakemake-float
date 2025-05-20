@@ -9,11 +9,11 @@ from float_utils import logger
 
 class FloatCancel:
     def __init__(self):
-        self._cmd = ['float', 'cancel', '--force']
+        self._cmd = ["float", "cancel", "--force"]
 
     def cancel_job(self, jobid):
         cmd = self._cmd
-        cmd.extend(['--job', jobid])
+        cmd.extend(["--job", jobid])
 
         FloatLogin().login()
         subprocess.Popen(cmd)
@@ -22,7 +22,7 @@ class FloatCancel:
         logger.debug(f"With command: {cmd}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     jobids = sys.argv[1:]
 
     float_cancel = FloatCancel()

@@ -11,39 +11,39 @@ from float_utils import logger
 
 class FloatStatus:
     _STATUS_MAP = {
-        'Submitted': 'running',
-        'Initializing': 'running',
-        'Starting': 'running',
-        'Executing': 'running',
-        'Capturing': 'running',
-        'Floating': 'running',
-        'Suspended': 'running',
-        'Suspending': 'running',
-        'Resuming': 'running',
-        'Completed': 'success',
-        'Cancelled': 'failed',
-        'Cancelling': 'failed',
-        'FailToComplete': 'failed',
-        'FailToExecute': 'failed',
-        'CheckpointFailed': 'failed',
-        'Timedout': 'failed',
-        'NoAvailableHost': 'failed',
-        'Unknown': 'failed',
-        'WaitingForLicense': 'failed'
+        "Submitted": "running",
+        "Initializing": "running",
+        "Starting": "running",
+        "Executing": "running",
+        "Capturing": "running",
+        "Floating": "running",
+        "Suspended": "running",
+        "Suspending": "running",
+        "Resuming": "running",
+        "Completed": "success",
+        "Cancelled": "failed",
+        "Cancelling": "failed",
+        "FailToComplete": "failed",
+        "FailToExecute": "failed",
+        "CheckpointFailed": "failed",
+        "Timedout": "failed",
+        "NoAvailableHost": "failed",
+        "Unknown": "failed",
+        "WaitingForLicense": "failed",
     }
 
     def __init__(self):
-        self._cmd = ['float', 'show', '--format', 'json']
+        self._cmd = ["float", "show", "--format", "json"]
 
     def job_status(self, jobid):
         cmd = self._cmd
-        cmd.extend(['--job', jobid])
+        cmd.extend(["--job", jobid])
 
         try:
             FloatLogin().login()
             output = subprocess.check_output(cmd)
             output = json.loads(output.decode())
-            float_status = output['status']
+            float_status = output["status"]
         except subprocess.CalledProcessError:
             msg = f"Failed to get show response for job: {jobid}"
             logger.exception(msg)
@@ -68,7 +68,7 @@ class FloatStatus:
         return status
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     jobid = sys.argv[1]
 
     float_status = FloatStatus()
@@ -82,8 +82,7 @@ if __name__ == '__main__':
         except subprocess.CalledProcessError:
             if attempt < num_retries:
                 logger.info(
-                    f"Retrying status check for job {jobid}"
-                    f" in {retry_int} seconds"
+                    f"Retrying status check for job {jobid}" f" in {retry_int} seconds"
                 )
                 time.sleep(retry_int)
             continue
@@ -91,6 +90,6 @@ if __name__ == '__main__':
 
     if status is None:
         logger.info(f"Failed to obtain status: marking job {jobid} as failed")
-        status = 'failed'
+        status = "failed"
 
     print(status)

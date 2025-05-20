@@ -1,5 +1,8 @@
 # snakemake-float
 
+[![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
+[![Snakemake 7](https://img.shields.io/badge/snakemake-7-blue.svg)](https://github.com/snakemake/snakemake/tree/v7.32.4)
+
 Snakemake cluster execution profile plugin to allow executing Snakemake jobs using MemVerge Memory Machine Cloud (float).
 
 ## Install profile
@@ -16,13 +19,16 @@ Set the following environment variables:
 * `MMC_PASSWORD`: MMCloud OpCenter password
 
 In the Snakemake working directory, create file `snakemake-float.yaml` based on the template, specifying arguments to pass to  `float` for job submission.
-* `work-dir` [required]: specifies the work directory for all worker nodes.
-* `data-volumes` [required]: specifies a list of data volumes for all worker nodes.
+
+* `work-dir` [required]: specifies the work directory for all worker nodes. This should be the same as `-d` or `--directory` parameter passed to `snakemake`.
+* `data-volumes` [optional]: specifies a list of data volumes for all worker nodes.
 * `job-prefix` [optional]: specifies a string to prefix job names with.
-* `base-image` [optional]: specifies a container image to execute jobs with. Must have Snakemake installed.
+* `base-image` [optional]: specifies a container image to execute jobs with. Must have `snakemake` installed. If left empty, an image with `snakemake` version corresponding to the head node is automatically selected.
 * `cpu` [optional]: specifies cpu for all worker nodes. Overrides inferred values from workflow.
-* `mem` [optional]: specifies mem for all worker nodes. Overrides inferred values from workflow.
-* `submit-extra` [optional]: specifies arguments, as a string, to append to the `float` command.
+* `mem` [optional]: specifies mem for all worker nodes in GBs. Overrides inferred values from workflow.
+* `max-cpu-factor` [optional]: a float number. default to 4. The maximum CPU cores of the instance is set to maxCpuFactor * cpus of the task.
+* `max-mem-factor` [optional]: a float number. default to 4. The maximum memory of the instance is set to maxMemoryFactor * memory of the task.
+* `submit-extra` [optional]: specifies arguments, as a string, to append to the `float` command. Storages registered in the MM Cloud can be mounted on all worker nodes by passing them here with `--storage` parameter.
 
 ## Shared working directory
 
@@ -55,6 +61,7 @@ data-volumes:
 ```
 
 Where:
+
 * `MOUNT_POINT` is the desired mount point of the shared working directory on each worker node.
 * `NFS_SERVER_ADDRESS` is the address of the NFS server.
 * `SHARED_DIR` is the path to the shared working directory
@@ -63,7 +70,7 @@ To execute a workflow, run:
 
 `snakemake --profile snakemake-float --jobs <VALUE>`
 
-`VALUE` can take the value `unlimited`.
+`VALUE` can take the value `unlimited`. This value determines the queue size.
 
 ### S3FS
 

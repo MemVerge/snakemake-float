@@ -4,31 +4,27 @@ import os
 
 import logging
 
+LOG_LEVEL_MAP = {
+    "CRITICAL": logging.CRITICAL,
+    "ERROR": logging.ERROR,
+    "WARNING": logging.WARNING,
+    "INFO": logging.INFO,
+    "DEBUG": logging.DEBUG,
+}
+
 LOG_FILE = (
     '.snakemake/log/'
     f"{os.environ.get('SNAKEMAKE_CLUSTER_SIDECAR_VARS', 'snakemake')}"
     '.float.log'
 )
 
-log_level = os.environ.get('SNAKEMAKE_FLOAT_LOG_LEVEL', 'INFO')
-match log_level:
-    case 'CRITICAL':
-        log_level = logging.CRITICAL
-    case 'ERROR':
-        log_level = logging.ERROR
-    case 'WARNING':
-        log_level = logging.WARNING
-    case 'INFO':
-        log_level = logging.INFO
-    case 'DEBUG':
-        log_level = logging.DEBUG
-    case _:
-        log_level = logging.NOTSET
+log_level = os.environ.get("SNAKEMAKE_FLOAT_LOG_LEVEL", "INFO")
+log_level = LOG_LEVEL_MAP.get(log_level, logging.NOTSET)
 
 logging.basicConfig(
     filename=LOG_FILE,
-    format='[%(asctime)s] [FLOAT] %(levelname)s: %(message)s',
-    level=log_level
+    format="[%(asctime)s] [FLOAT] %(levelname)s: %(message)s",
+    level=log_level,
 )
 
 logger = logging.getLogger(__name__)

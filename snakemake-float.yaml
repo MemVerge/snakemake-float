@@ -5,4 +5,6 @@ data-volumes:
 - ""
 cpu: ""
 mem: ""
+max-cpu-factor: ""
+max-mem-factor: ""
 submit-extra: ""

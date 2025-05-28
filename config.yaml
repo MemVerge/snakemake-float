@@ -5,4 +5,4 @@ cluster-cancel: "float_cancel.py"
 cluster-sidecar: "float_sidecar.py"
 no-shared-fs: true
 rerun-incomplete: true
-retries: 3
+retries: 0

@@ -1,23 +1,29 @@
 #!/bin/bash
 #
-# This script will be submitted as a contianerInit hook script and do following things:
+# This script can be submitted as a contianerInit hook script to do the following,
 #
 # - Install snakemake and its dependencies including snakemake-float
-# - If running as admin, a snakemake user is added and the user directory is placed under /home directory.
-# - Running as admin can cause Snakemake to fail with permission denied errors.
-# - Running as a non-admin user will create a user with the same UID as the MM Cloud user.
+# - If running as admin, a 'snakemake' admin user is added with /home/snakemake home directory
+# - If running as a non-admin user, the user is created with the same UID as the MM Cloud user with /home/$USER home directory
+# - Makes the FSx and EFS directories writable by all users
+#
+# Running as admin can cause snakemake to fail with permission denied errors
 #
 # Following parameters can be passed in as environment variables:
 #
 # OPCENTER_PASSWORD_SECRET: The name of the OPCentre secret passed as '{secret:<Secret name>}'.
+# FSX_MOUNT_PATH: The mount path for FSx. Default is '/mnt/fsx'.
+# EFS_MOUNT_PATH: The mount path for EFS. Default is '/mnt/efs'.
 # SNAKEMAKE_VERSION: The version of Snakemake to be installed. Default is 7.32.4.
 # SNAKEMAKE_FLOAT_VERSION: The version of snakemake-float to be installed.
-# Default is MemVerge/snakemake-float/archive/refs/tags/v0.2.0.tar.gz
+# Default is MemVerge/snakemake-float/archive/refs/tags/v0.3.0.tar.gz
 
 #set -x
 OPCENTER_PASSWORD_SECRET=${OPCENTER_PASSWORD_SECRET:-'{secret:OPCENTER_PASSWORD}'}
+FSX_MOUNT_PATH=${FSX_MOUNT_PATH:-'/mnt/fsx'}
+EFS_MOUNT_PATH=${EFS_MOUNT_PATH:-'/mnt/efs'}
 SNAKEMAKE_VERSION=${SNAKEMAKE_VERSION:-'7.32.4'}
-SNAKEMAKE_FLOAT_VERSION=${SNAKEMAKE_FLOAT_VERSION:-'MemVerge/snakemake-float/archive/refs/tags/v0.2.0.tar.gz'}
+SNAKEMAKE_FLOAT_VERSION=${SNAKEMAKE_FLOAT_VERSION:-'MemVerge/snakemake-float/archive/refs/tags/v0.3.0.tar.gz'}
 
 export PATH=$PATH:/usr/bin:/usr/local/bin:/opt/memverge/bin
 export HOME=/root
@@ -92,7 +98,7 @@ function set_secret {
   fi
 }
 
-function prepare_git_env() {
+function install_git() {
   git_path=$(which git)
   if [[ $? -eq 0 ]]; then
     log "Git is already installed at $git_path"
@@ -105,7 +111,7 @@ function prepare_git_env() {
   fi
 }
 
-function prepare_tmux_env() {
+function install_tmux() {
   tmux_path=$(which tmux)
   if [[ $? -eq 0 ]]; then
     log "Tmux is already installed at $tmux_path"
@@ -219,19 +225,33 @@ function login_to_mmc {
   fi
 }
 
+function make_fsx_efs_writable {
+
+  if [ -d $FSX_MOUNT_PATH ]; then
+    chmod 777 $FSX_MOUNT_PATH
+    log "Made FSx at $FSX_MOUNT_PATH writable"
+  fi
+
+  if [ -d $EFS_MOUNT_PATH ]; then
+    chmod 777 $EFS_MOUNT_PATH
+    log "Made EFS at $EFS_MOUNT_PATH writable"
+  fi
+}
+
 #env
 
 # Execute setup scripts
 assure_root
 
-prepare_tmux_env
-prepare_git_env
+install_tmux
+install_git
 prepare_user_env
 
 install_conda
 install_snakemake
 install_snakemake_float
 
+make_fsx_efs_writable
 login_to_mmc
 
 exit 0

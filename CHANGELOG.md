@@ -3,6 +3,17 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.0 - [28-May-2025]
+
+### `Added`
+
+1. Added `max-cpu-factor`, `max-mem-factor` to the template `snakemake-float.yaml` file
+2. Added directory permissions snippets to the cloud init. script
+
+### `Deprecated`
+
+1. The cluster default for `retries` has been set to 0 now to make the retry behavior more transparent to the user.
+
 ## 0.2.0 - [21-May-2025]
 
 ### `Added`

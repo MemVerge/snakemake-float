@@ -36,6 +36,9 @@ Default cluster configuration is defined in [config.yaml](./config.yaml). By def
 
 ## Software dependencies
 
+> [!Warning]
+> When using `--conda-create-envs-only`, do not include `--profile snakemake-float` as this causes the pipeline to exit without creating the conda environments.
+
 There are two ways in which dependencies can be managed,
 
 - `A fat container:` Using a single docker container which has all the software dependencies pre-loaded. For example, `quay.io/biocontainers/verkko:2.2.1--h45dadce_0` for the [verkko](https://github.com/marbl/verkko) pipeline. This can be specified against `base-image` in `snakemake-float.yaml`.

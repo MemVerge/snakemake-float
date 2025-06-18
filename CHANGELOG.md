@@ -3,6 +3,10 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### 0.3.1dev - [17-Jun-2025]
+
+1. Added a note on the usage of `--conda-create-envs-only`
+
 ## 0.3.0 - [28-May-2025]
 
 ### `Added`
